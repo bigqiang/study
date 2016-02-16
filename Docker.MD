@@ -39,10 +39,10 @@ Docker引擎使用了特定Linux内核,所以Windows不能原生运行Docker引�
  3. 输入 `docker images` 命令可列出本地所有镜像。
 
 ## 构建自己的镜像
-whalesay镜像可以升级。不必思考要说什么感觉会不错。只要输入一堆东西让whalsay去讲。如：
-```docker run docker/whalesay cowsay boo-boo```
+whalesay镜像可以升级。不必思考要说什么感觉会不错。只要输入一堆东西让whalsay自己去讲。如：
+`docker run docker/whalesay cowsay boo-boo`
 
-本节会通过, you will improve the whalesay image by building a new version that “talks on its own” and requires fewer words to run.
+你将构建一个新版本，以改善whalesay镜像版本，只需要输入很少内容新版本就会自己去说。
 
 ### 步骤1: 打开 Docker Quickstart Terminal
 ### 步骤2: 写 Dockerfile 文件
@@ -99,9 +99,7 @@ Successfully built 7d9495d03763
 `docker build -t docker-whale .`命令会在当前目录中调用Dockerfile文件，然后在本地构建名为`docker-whale`的镜像。该命令耗时约1分钟左右，返回结果内容较长且复杂，本节会解释这些信息。
 
 首先 Docker 会检查构建所需的所有构件。
-```
-Sending build context to Docker daemon 158.8 MB
-```
+`Sending build context to Docker daemon 158.8 MB`
 
 然后，Docker加载whalesay镜像。前面已经下载该镜像，所以Docker不必再下载了。
 ```
@@ -158,6 +156,186 @@ Removing intermediate container a8e6faa88df3
 Successfully built 7d9495d03763
 ```
 
-### 步骤5:
+### 步骤5: 运行你的新镜像 `docker-whale`
+1. 在当前工作路径下输入`docker images`
+该命令列出如下内容：
+```
+$ docker images
+REPOSITORY           TAG          IMAGE ID          CREATED             VIRTUAL SIZE
+docker-whale         latest       7d9495d03763      4 minutes ago       273.7 MB
+docker/whalesay      latest       fb434121fc77      4 hours ago         247 MB
+hello-world          latest       91c95931e552      5 weeks ago         910 B
+```
+2. 运行新镜像，输入`docker run docker-whale`，返回如下结果：
+```
+$ docker run docker-whale
+ _________________________________________ 
+/ "He was a modest, good-humored boy. It  \
+\ was Oxford that made him insufferable." /
+ ----------------------------------------- 
+          \
+           \
+            \     
+                          ##        .            
+                    ## ## ##       ==            
+                 ## ## ## ##      ===            
+             /""""""""""""""""___/ ===        
+        ~~~ {~~ ~~~~ ~~~ ~~~~ ~~ ~ /  ===- ~~~   
+             \______ o          __/            
+              \    \        __/             
+                \____\______/   
+```
+这是个更智能些的whale。不用下载了，因为该镜像在本地已经可用了。
+
+## 创建 Docker Hub 账号 及版本库
+构建的镜像可以与他人分享。 这首先需要有Docker Hub账号，然后需要把镜像 push 到上面，以便他人能在Docker引擎下运行它。
+
+### 步骤1: 注册账号
+### 步骤2: 验证邮件并添一个映像版本库
+验证email后，可以在 Hub 上分享任何东西。
+然后在 hub.docker.com 上创建一个Repository。
+
+## 对镜像进行 tag, push 及 pull 操作   
+### 步骤1: 对镜像进行 tag 和 push 操作
+1. 输入`docker images`列出当前所有镜像：
+```
+$ docker images
+REPOSITORY           TAG          IMAGE ID            CREATED             VIRTUAL SIZE
+docker-whale         latest       7d9495d03763        38 minutes ago      273.7 MB
+<none>               <none>       5dac217f722c        45 minutes ago      273.7 MB
+docker/whalesay      latest       fb434121fc77        4 hours ago         247 MB
+hello-world          latest       91c95931e552        5 weeks ago         910 B
+```
+2. 找到 `docker-whale` 的`IMAGE ID`。本例中为 7d9495d03763
+注意：`REPOSITORY`显示的版本库名称(docker-whale)并不是命名空间。这是要和Docker Hub账号关联的，要把它命名成 `YOUR_DOCKERHUB_USERNAME/docker-whale` 的形式。Docker Hub上该镜像的信息会指明命名空间。
+
+3. 用 `IMAGE ID` 和 `docker tag` 命令来 tag 你的 `docker-whale` 镜像
+命令形式如下：
+[](https://docs.docker.com/tutimg/tagger.png)
+
+所以实际形式为：`$ docker tag 7d9495d03763 maryatdocker/docker-whale:latest`
+
+4. 再用 `docker images` 查看标记的镜像
+```
+$ docker images
+REPOSITORY                  TAG       IMAGE ID        CREATED          VIRTUAL SIZE
+maryatdocker/docker-whale   latest    7d9495d03763    5 minutes ago    273.7 MB
+docker-whale                latest    7d9495d03763    2 hours ago      273.7 MB
+<none>                      <none>    5dac217f722c    5 hours ago      273.7 MB
+docker/whalesay             latest    fb434121fc77    5 hours ago      247 MB
+hello-world                 latest    91c95931e552    5 weeks ago      910 B
+```
+
+5. 使用 `docker login` 登录 Docker Hub，格式如下：
+```
+docker login --username=yourhubusername --email=youremail@company.com
+```
+When prompted, enter your password and press enter. So, for example:
+
+$ docker login --username=maryatdocker --email=mary@docker.com
+Password:
+WARNING: login credentials saved in C:\Users\sven\.docker\config.json
+Login Succeeded
+Type the docker push command to push your image to your new repository.
+
+$ docker push maryatdocker/docker-whale
+   The push refers to a repository [maryatdocker/docker-whale] (len: 1)
+   7d9495d03763: Image already exists
+   c81071adeeb5: Image successfully pushed
+   eb06e47a01d2: Image successfully pushed
+   fb434121fc77: Image successfully pushed
+   5d5bd9951e26: Image successfully pushed
+   99da72cfe067: Image successfully pushed
+   1722f41ddcb5: Image successfully pushed
+   5b74edbcaa5b: Image successfully pushed
+   676c4a1897e6: Image successfully pushed
+   07f8e8c5e660: Image successfully pushed
+   37bea4ee0c81: Image successfully pushed
+   a82efea989f9: Image successfully pushed
+   e9e06b06e14c: Image successfully pushed
+   Digest: sha256:ad89e88beb7dc73bf55d456e2c600e0a39dd6c9500d7cd8d1025626c4b985011
+Return to your profile on Docker Hub to see your new image.
+   
+   
+### 步骤2: Pull your new image
+In this last section, you’ll pull the image you just pushed to hub. Before you do that though, you’ll need to remove the original image from your local machine. If you left the original image on your machine. Docker would not pull from the hub — why would it? The two images are identical.
+
+Place your cursor at the prompt in the Docker Quickstart Terminal window.
+
+Type docker images to list the images you currently have on your local machine.
+
+$ docker images
+REPOSITORY                  TAG       IMAGE ID        CREATED          VIRTUAL SIZE
+maryatdocker/docker-whale   latest    7d9495d03763    5 minutes ago    273.7 MB
+docker-whale                latest    7d9495d03763    2 hours ago      273.7 MB
+<none>                      <none>    5dac217f722c    5 hours ago      273.7 MB
+docker/whalesay             latest    fb434121fc77    5 hours ago      247 MB
+hello-world                 latest    91c95931e552    5 weeks ago      910 B
+To make a good test, you need to remove the maryatdocker/docker-whale and docker-whale images from your local system. Removing them forces the next docker pull to get the image from your repository.
+
+Use the docker rmi to remove the maryatdocker/docker-whale and docker-whale images.
+
+You can use an ID or the name to remove an image.
+
+$ docker rmi -f 7d9495d03763
+$ docker rmi -f docker-whale
+Pull and load a new image from your repository using the docker run command.
+
+The command you type should include your username from Docker Hub.
+
+docker run yourusername/docker-whale
+Since the image is no longer available on your local system, Docker downloads it.
+
+$ docker run maryatdocker/docker-whale
+Unable to find image 'maryatdocker/docker-whale:latest' locally
+latest: Pulling from maryatdocker/docker-whale
+eb06e47a01d2: Pull complete
+c81071adeeb5: Pull complete
+7d9495d03763: Already exists
+e9e06b06e14c: Already exists
+a82efea989f9: Already exists
+37bea4ee0c81: Already exists
+07f8e8c5e660: Already exists
+676c4a1897e6: Already exists
+5b74edbcaa5b: Already exists
+1722f41ddcb5: Already exists
+99da72cfe067: Already exists
+5d5bd9951e26: Already exists
+fb434121fc77: Already exists
+Digest: sha256:ad89e88beb7dc73bf55d456e2c600e0a39dd6c9500d7cd8d1025626c4b985011
+Status: Downloaded newer image for maryatdocker/docker-whale:latest
+________________________________________
+/ Having wandered helplessly into a      \
+| blinding snowstorm Sam was greatly     |
+| relieved to see a sturdy Saint Bernard |
+| dog bounding toward him with the       |
+| traditional keg of brandy strapped to  |
+| his collar.                            |
+|                                        |
+| "At last," cried Sam, "man's best      |
+\ friend -- and a great big dog, too!"   /
+----------------------------------------
+               \
+                \
+                 \
+                         ##        .
+                   ## ## ##       ==
+                ## ## ## ##      ===
+            /""""""""""""""""___/ ===
+       ~~~ {~~ ~~~~ ~~~ ~~~~ ~~ ~ /  ===- ~~~
+            \______ o          __/
+             \    \        __/
+               \____\______/
+Where to go next
+
+You’ve done a lot, you’ve done all of the following fundamental Docker tasks.
+
+installed Docker
+run a software image in a container
+located an interesting image on Docker Hub
+run the image on your own machine
+modified an image to create your own and run it
+create a Docker Hub account and repository
+pushed your image to Docker Hub for others to share
 
 # Mac 使用
