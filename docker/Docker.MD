@@ -226,18 +226,17 @@ docker/whalesay             latest    fb434121fc77    5 hours ago      247 MB
 hello-world                 latest    91c95931e552    5 weeks ago      910 B
 ```
 
-5. 使用 `docker login` 登录 Docker Hub，格式如下：
+5. 使用 `docker login` 登录 Docker Hub，格式：`docker login --username=yourhubusername --email=youremail@company.com`
+示例: 
 ```
-docker login --username=yourhubusername --email=youremail@company.com
-```
-When prompted, enter your password and press enter. So, for example:
-
 $ docker login --username=maryatdocker --email=mary@docker.com
 Password:
 WARNING: login credentials saved in C:\Users\sven\.docker\config.json
 Login Succeeded
-Type the docker push command to push your image to your new repository.
+```
 
+6. push 镜像入库的命令： `docker push`
+```
 $ docker push maryatdocker/docker-whale
    The push refers to a repository [maryatdocker/docker-whale] (len: 1)
    7d9495d03763: Image already exists
@@ -254,38 +253,23 @@ $ docker push maryatdocker/docker-whale
    a82efea989f9: Image successfully pushed
    e9e06b06e14c: Image successfully pushed
    Digest: sha256:ad89e88beb7dc73bf55d456e2c600e0a39dd6c9500d7cd8d1025626c4b985011
-Return to your profile on Docker Hub to see your new image.
-   
-   
-### 步骤2: Pull your new image
-In this last section, you’ll pull the image you just pushed to hub. Before you do that though, you’ll need to remove the original image from your local machine. If you left the original image on your machine. Docker would not pull from the hub — why would it? The two images are identical.
+```
+7. 返回 Docker Hub 页面可以看到自己提交的新镜像
 
-Place your cursor at the prompt in the Docker Quickstart Terminal window.
 
-Type docker images to list the images you currently have on your local machine.
+### 步骤2: 把新镜像从 hub 上 pull 下来
+为能操作本步骤，需要先从本地删除原镜像，否则Docker不会从hub上pull新镜像，因为本地和hub的镜像是一样的。
 
-$ docker images
-REPOSITORY                  TAG       IMAGE ID        CREATED          VIRTUAL SIZE
-maryatdocker/docker-whale   latest    7d9495d03763    5 minutes ago    273.7 MB
-docker-whale                latest    7d9495d03763    2 hours ago      273.7 MB
-<none>                      <none>    5dac217f722c    5 hours ago      273.7 MB
-docker/whalesay             latest    fb434121fc77    5 hours ago      247 MB
-hello-world                 latest    91c95931e552    5 weeks ago      910 B
-To make a good test, you need to remove the maryatdocker/docker-whale and docker-whale images from your local system. Removing them forces the next docker pull to get the image from your repository.
+1. 用 `docker images` 命令列出本地镜像
 
-Use the docker rmi to remove the maryatdocker/docker-whale and docker-whale images.
-
-You can use an ID or the name to remove an image.
-
+2. 用 `docker rmi` 命令删除本地的 `maryatdocker/docker-whale` 及 `docker-whale`镜像
+用 ID 或 名称均可删除一个镜像，示例如下：
+```
 $ docker rmi -f 7d9495d03763
 $ docker rmi -f docker-whale
-Pull and load a new image from your repository using the docker run command.
-
-The command you type should include your username from Docker Hub.
-
-docker run yourusername/docker-whale
-Since the image is no longer available on your local system, Docker downloads it.
-
+```
+4. 使用 `docker run` 命令从软件版本库 pull下并加加载一个新镜像，示例如下：
+```
 $ docker run maryatdocker/docker-whale
 Unable to find image 'maryatdocker/docker-whale:latest' locally
 latest: Pulling from maryatdocker/docker-whale
@@ -326,16 +310,6 @@ ________________________________________
             \______ o          __/
              \    \        __/
                \____\______/
-Where to go next
-
-You’ve done a lot, you’ve done all of the following fundamental Docker tasks.
-
-installed Docker
-run a software image in a container
-located an interesting image on Docker Hub
-run the image on your own machine
-modified an image to create your own and run it
-create a Docker Hub account and repository
-pushed your image to Docker Hub for others to share
+```
 
 # Mac 使用
