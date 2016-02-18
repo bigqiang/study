@@ -69,6 +69,7 @@ whalesay镜像可以升级。不必思考要说什么感觉会不错。只要输
 
 6. 一旦镜像有了所需软件，就可以在镜像加载后给软件指令
 ![Line three](https://docs.docker.com/windows/images/note-pad4.png)
+
 这行命令是告诉`fortunes`程序把它的名言警句发送给`cowsay`程序
 
 7. 保存 Dockerfile 文件后退出

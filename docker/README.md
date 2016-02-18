@@ -1,6 +1,8 @@
 # Docker笔记
 
-注：boot2docker缺省的用户名是docker,密码是tcuser
+> 注：boot2docker缺省的用户名是docker,密码是tcuser。可通过 ssh方式登录。比较省事的做法是用命令 `docker-machine ssh default` 直接登录进去，不需要密码
+
+> [一些常见问题](https://github.com/docker/kitematic/wiki/Common-Issues-and-Fixes)
 
 ## [Docker起步指南](tutorials.md)
 ## PHP开发者搭建Docker开发环境
