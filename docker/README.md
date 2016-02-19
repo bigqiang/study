@@ -4,7 +4,14 @@
 
 > [一些常见问题](https://github.com/docker/kitematic/wiki/Common-Issues-and-Fixes)
 
-## [Docker起步指南](tutorials.md)
+# Docker 参考文件 [官方来源](https://github.com/docker/docker/blob/master/docs/reference/index.md)
+ 1. [Dockerfile 参考](Dockerfile.md)
+ 2. Docker run reference
+ 3. Command line reference
+ 4. API Reference
+
+
+## [Dockerfile 文件格式说明](Dockerfile.md)
 ## PHP开发者搭建Docker开发环境
  1. [如何制作一个定制的 PHP 基础 Docker 镜像](php-docker01.md)
  2. [如何开发一个 PHP 的 Docker 化应用](php-docker02.md)
