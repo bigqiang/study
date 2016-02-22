@@ -17,14 +17,9 @@ Practices](dockerfile_best-practices.md) 。
 
 ## 用法
 
-The [`docker build`](https://github.com/docker/docker/blob/master/docs/reference/commandline/build.md) command builds an image from
-a `Dockerfile` and a *context*. The build's context is the files at a specified
-location `PATH` or `URL`. The `PATH` is a directory on your local filesystem.
-The `URL` is a the location of a Git repository.
+[`docker build`](https://github.com/docker/docker/blob/master/docs/reference/commandline/build.md) 命令根据`Dockerfile`及 *上下文* 来构建一个镜像。构建的上下文是指该文件所在的特定位置`PATH`或`URL`。`PATH`是指本地文件系统的目录。`URL`是指 Git 版本库的位置。
 
-A context is processed recursively. So, a `PATH` includes any subdirectories and
-the `URL` includes the repository and its submodules. A simple build command
-that uses the current directory as context:
+上下文可以被递归处理。所以，`PATH`包含任意子目录，并且`URL`包含了版本库及其子模块。使用当前目录的上下文可以简化命令：
 
     $ docker build .
     Sending build context to Docker daemon  6.51 MB
