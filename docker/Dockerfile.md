@@ -25,53 +25,31 @@ Practices](dockerfile_best-practices.md) 。
     Sending build context to Docker daemon  6.51 MB
     ...
 
-The build is run by the Docker daemon, not by the CLI. The first thing a build
-process does is send the entire context (recursively) to the daemon.  In most
-cases, it's best to start with an empty directory as context and keep your
-Dockerfile in that directory. Add only the files needed for building the
-Dockerfile.
+该构建是由 Docker daemon 运行的，而非 CLI。构建进程做的头一件事就是把整个上下文（递归）发送给daemon。多数情况下，最好是在一个空目录中做上下文启动，把
+Dockerfile 文件放在该目录中。仅添加构建该 Dockerfile 文件所必须的文件在里面。
 
->**Warning**: Do not use your root directory, `/`, as the `PATH` as it causes
->the build to transfer the entire contents of your hard drive to the Docker
->daemon.
+>**警告**: 不要用目录 `/` 作 `PATH` ，它可能让构建传送硬盘所有内容给 Docker daemon。
 
-To use a file in the build context, the `Dockerfile` refers to the file specified
-in an instruction, for example,  a `COPY` instruction. To increase the build's
-performance, exclude files and directories by adding a `.dockerignore` file to
-the context directory.  For information about how to [create a `.dockerignore`
-file](#dockerignore-file) see the documentation on this page.
+为了使用在构建上下文中的某个文件，`Dockerfile` 文件中的指令要具体地指定该文件。例如 `COPY` 指令。为提升构建性能，在上下文目录中可以添加一个 `.dockerignore` 文件以排除不要的文件和目录 。 详情查看本文档的如何创建一个[`.dockerignore`文件](#dockerignore文件)。
 
-Traditionally, the `Dockerfile` is called `Dockerfile` and located in the root
-of the context. You use the `-f` flag with `docker build` to point to a Dockerfile
-anywhere in your file system.
+习惯上，`Dockerfile`被称作`Dockerfile`，并且位于上下文的根路径中。`docker build`用`-f`标志参数指向文件系统中任意位置的 Dockerfile 文件。
 
     $ docker build -f /path/to/a/Dockerfile .
 
-You can specify a repository and tag at which to save the new image if
-the build succeeds:
+如果构建成功，可以指定一个版本库并标记存储这个新镜像：
 
     $ docker build -t shykes/myapp .
 
-To tag the image into multiple repositories after the build,
-add multiple `-t` parameters when you run the `build` command:
+构建完成后，如果想标记该镜像到多个版本库中，可以在运行`build`命令时添加多个 `-t` 参数：
 
     $ docker build -t shykes/myapp:1.0.2 -t shykes/myapp:latest .
 
-The Docker daemon runs the instructions in the `Dockerfile` one-by-one,
-committing the result of each instruction
-to a new image if necessary, before finally outputting the ID of your
-new image. The Docker daemon will automatically clean up the context you
-sent.
+在最终生成新镜像的ID前，Docker daemon 是按顺序依次执行 `Dockerfile` 文件中指令的，同时在必要的情况下，会把每条指令的执行结果提交到新镜像中。Docker daemon 会自动清理干净发送过来的上下文描述信息。
 
-Note that each instruction is run independently, and causes a new image
-to be created - so `RUN cd /tmp` will not have any effect on the next
-instructions.
+注意，每条指令都是独立运行的，都会产生一个新镜像，所以`RUN cd /tmp`不会对下一条指令有任何影响。
 
-Whenever possible, Docker will re-use the intermediate images (cache),
-to accelerate the `docker build` process significantly. This is indicated by
-the `Using cache` message in the console output.
-(For more information, see the [Build cache section](https://github.com/docker/docker/blob/master/docs/userguide/eng-image/dockerfile_best-practices.md#build-cache)) in the
-`Dockerfile` best practices guide:
+只要有可能，Docker就会重用中间镜像(cache)，这可以极大加速`docker build`进程。可通过控制台中的`Using cache`信息显示这一点。
+(详情参阅 [Build cache section](https://github.com/docker/docker/blob/master/docs/userguide/eng-image/dockerfile_best-practices.md#build-cache)) `Dockerfile`文件最佳实践指南：
 
     $ docker build -t svendowideit/ambassador .
     Sending build context to Docker daemon 15.36 kB
@@ -88,60 +66,42 @@ the `Using cache` message in the console output.
      ---> 7ea8aef582cc
     Successfully built 7ea8aef582cc
 
-When you're done with your build, you're ready to look into [*Pushing a
-repository to its registry*](https://github.com/docker/docker/blob/master/docs/userguide/containers/dockerrepos.md#contributing-to-docker-hub).
+构建完成后就要研究一下 [*push 一个版本库到它的 registry*](https://github.com/docker/docker/blob/master/docs/userguide/containers/dockerrepos.md#contributing-to-docker-hub).
 
 ## Format
 
-Here is the format of the `Dockerfile`:
+`Dockerfile`文件格式如下:
 
     # Comment
     INSTRUCTION arguments
 
-The instruction is not case-sensitive, however convention is for them to
-be UPPERCASE in order to distinguish them from arguments more easily.
+指令 INSTRUCTION 不区别大小写，不过习惯上为便于和参数区别都会是大写的。
 
-Docker runs the instructions in a `Dockerfile` in order. **The
-first instruction must be \`FROM\`** in order to specify the [*Base
-Image*](https://github.com/docker/docker/blob/master/docs/reference/glossary.md#base-image) from which you are building.
+Docker 按顺序运行`Dockerfile`文件中的指令。 **第一条指令必须是 \`FROM\`** ，这是为了指名所构建镜像的 [*Base Image*](https://github.com/docker/docker/blob/master/docs/reference/glossary.md#base-image)。
 
-Docker will treat lines that *begin* with `#` as a
-comment. A `#` marker anywhere else in the line will
-be treated as an argument. This allows statements like:
+Docker 会把`#`开始的行作为注释。在其他任何位置的 `#` 的标记会被当作参数，如：
 
     # Comment
     RUN echo 'we are running some # of cool things'
 
-Here is the set of instructions you can use in a `Dockerfile` for building
-images.
+以下是 `Dockerfile` 文件构建镜像使用的指令集。
 
 ### Environment replacement
 
-Environment variables (declared with [the `ENV` statement](#env)) can also be
-used in certain instructions as variables to be interpreted by the
-`Dockerfile`. Escapes are also handled for including variable-like syntax
-into a statement literally.
+环境变量（由[`ENV`语句](#env)声明）使用指定指令作变量，`Dockerfile`文件可以解释它。也可用类变量的语法进行转义处理成语句。
 
-Environment variables are notated in the `Dockerfile` either with
-`$variable_name` or `${variable_name}`. They are treated equivalently and the
-brace syntax is typically used to address issues with variable names with no
-whitespace, like `${foo}_bar`.
+`Dockerfile` 文件中，可用`$variable_name`或是`${variable_name}`来引用环境变量。二者是等效的。大括号语法常用于处理变量名无空格时的问题，比如`${foo}_bar`。
 
-The `${variable_name}` syntax also supports a few of the standard `bash`
-modifiers as specified below:
+`${variable_name}` 语法也支持几种标准`bash`修饰符，如下：
 
-* `${variable:-word}` indicates that if `variable` is set then the result
-  will be that value. If `variable` is not set then `word` will be the result.
-* `${variable:+word}` indicates that if `variable` is set then `word` will be
-  the result, otherwise the result is the empty string.
+* `${variable:-word}` 表示如果 `variable` 值已经设置，那么结果就是该值；否则，`variable`的结果值是`word`。
+* `${variable:+word}` 表示如果 `variable` 值已经设置，那么结果就是`word`；否则，结果是空字符串。
 
-In all cases, `word` can be any string, including additional environment
-variables.
+任何情况下，`word`可以是任意字符串，包含其他环境变量。
 
-Escaping is possible by adding a `\` before the variable: `\$foo` or `\${foo}`,
-for example, will translate to `$foo` and `${foo}` literals respectively.
+可在变量前加上`\`进行转义，如： `\$foo` 或 `\${foo}`，这会在字面上分别转义成 `$foo` 和 `${foo}`。
 
-Example (parsed representation is displayed after the `#`):
+示例 (解析后的结果放在`#`后)：
 
     FROM busybox
     ENV foo /bar
@@ -149,8 +109,7 @@ Example (parsed representation is displayed after the `#`):
     ADD . $foo       # ADD . /bar
     COPY \$foo /quux # COPY $foo /quux
 
-Environment variables are supported by the following list of instructions in
-the `Dockerfile`:
+`Dockerfile`中支持以下环境变量列表中的指令：
 
 * `ADD`
 * `COPY`
@@ -162,43 +121,28 @@ the `Dockerfile`:
 * `VOLUME`
 * `STOPSIGNAL`
 
-as well as:
+还有：
 
-* `ONBUILD` (when combined with one of the supported instructions above)
+* `ONBUILD` (在与以上支持的指令组合时)
 
-> **Note**:
-> prior to 1.4, `ONBUILD` instructions did **NOT** support environment
-> variable, even when combined with any of the instructions listed above.
+> **注意**:
+> 1.4版以前，`ONBUILD`指令**不支持**环境变量，即使在与以上任何指令组合使用时。
 
-Environment variable substitution will use the same value for each variable
-throughout the entire command. In other words, in this example:
+环境变量的替换在整个命令行中，变量只用同一个值。举例说明：
 
     ENV abc=hello
     ENV abc=bye def=$abc
     ENV ghi=$abc
 
-will result in `def` having a value of `hello`, not `bye`. However,
-`ghi` will have a value of `bye` because it is not part of the same command
-that set `abc` to `bye`.
+这会产生这样的效果，`def`得到是`hello`的值，而不是`bye`的，第二行整个命令中abc只能用一个值 。但是，`ghi`得到的是`bye`的值，因为它不是设置`abc`值`bye`命令行的一部分。
 
-### .dockerignore file
+### .dockerignore文件
 
-Before the docker CLI sends the context to the docker daemon, it looks
-for a file named `.dockerignore` in the root directory of the context.
-If this file exists, the CLI modifies the context to exclude files and
-directories that match patterns in it.  This helps to avoid
-unnecessarily sending large or sensitive files and directories to the
-daemon and potentially adding them to images using `ADD` or `COPY`.
+docker CLI 给 docker daemon 发送上下文前，先在上下文的根目录中寻找名为`.dockerignore`的文件。如果存在，CLI 会修改上下文描述，把匹配该文件中描述的文件和目录排除出去。可避免不必要地发送超大或敏感内容的文件和目录给 daemon，也可避免使用`ADD`或`COPY`把他们添加到镜像中的可能性。
 
-The CLI interprets the `.dockerignore` file as a newline-separated
-list of patterns similar to the file globs of Unix shells.  For the
-purposes of matching, the root of the context is considered to be both
-the working and the root directory.  For example, the patterns
-`/foo/bar` and `foo/bar` both exclude a file or directory named `bar`
-in the `foo` subdirectory of `PATH` or in the root of the git
-repository located at `URL`.  Neither excludes anything else.
+CLI 会把`.dockerignore`文件解析成一个独立行的模式列表，模式类似于 Unix shell 的 file globs。为了模式匹配，上下文的根目录会被看作即是工作目录也是根目录。例如模式 `/foo/bar` 和 `foo/bar`表示，`PATH`下(或是位于`URL`的的git版本库的根目录下)`foo`子目录中名为`bar`的文件或目录被排除。
 
-Here is an example `.dockerignore` file:
+这里有个`.dockerignore`文件示例：
 
 ```
     */temp*
@@ -206,41 +150,29 @@ Here is an example `.dockerignore` file:
     temp?
 ```
 
-This file causes the following build behavior:
+该文件会产生下述构建操作：
 
-| Rule           | Behavior                                                                                                                                                                     |
-|----------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `*/temp*`      | Exclude files and directories whose names start with `temp` in any immediate subdirectory of the root.  For example, the plain file `/somedir/temporary.txt` is excluded, as is the directory `/somedir/temp`.                 |
-| `*/*/temp*`    | Exclude files and directories starting with `temp` from any subdirectory that is two levels below the root. For example, `/somedir/subdir/temporary.txt` is excluded. |
-| `temp?`        | Exclude files and directories in the root directory whose names are a one-character extension of `temp`.  For example, `/tempa` and `/tempb` are excluded.
+| 规则           | 操作                                                                               |
+|---------------|----------------------------------------------------------------------------------|
+| `*/temp*`     | 排除任何根目录下任何直接以 `temp` 开始的文件和文件夹。如，文本文件 `/somedir/temporary.txt` 会被排除，因为它的开头是`/somedir/temp`。      |
+| `*/*/temp*`    | 排除根目录下两层子目录下以 `temp` 起始的文件和目录。如，`/somedir/subdir/temporary.txt` 会被排除。 |
+| `temp?`       | 排除根目录下对`temp`扩展了一个字符的所有文件和目录名。如，`/tempa` 和 `/tempb`都被排除。
 
 
-Matching is done using Go's
-[filepath.Match](http://golang.org/pkg/path/filepath#Match) rules.  A
-preprocessing step removes leading and trailing whitespace and
-eliminates `.` and `..` elements using Go's
-[filepath.Clean](http://golang.org/pkg/path/filepath/#Clean).  Lines
-that are blank after preprocessing are ignored.
+模式匹配是通过 Go 的[filepath.Match](http://golang.org/pkg/path/filepath#Match)规则完成的。通过 Go 的 [filepath.Clean](http://golang.org/pkg/path/filepath/#Clean) 进行预处理步骤会删除前导和尾部空格，并且清除`.` 和 `..` 元素。预处理结束后的空白行会被忽略。
 
-Beyond Go's filepath.Match rules, Docker also supports a special
-wildcard string `**` that matches any number of directories (including
-zero). For example, `**/*.go` will exclude all files that end with `.go`
-that are found in all directories, including the root of the build context.
+除了 Go 的 filepath.Match 规则，Docker也支持特殊通配符字串`**`，它可匹配任意数量(含0)的目录。如 `**/*.go` 会排除所有目录中（含构建上下文中的根目录）所有以 `.go` 结尾的文件。
 
-Lines starting with `!` (exclamation mark) can be used to make exceptions
-to exclusions.  The following is an example `.dockerignore` file that
-uses this mechanism:
+以`!`起始的行用于设定排除规则的例外项。如下示例：
 
 ```
     *.md
     !README.md
 ```
 
-All markdown files *except* `README.md` are excluded from the context.
+*除了* `README.md`文件外，排除上下文中所有markdown文件。
 
-The placement of `!` exception rules influences the behavior: the last
-line of the `.dockerignore` that matches a particular file determines
-whether it is included or excluded.  Consider the following example:
+`!`例外规则的位置造成的影响：匹配特殊文件的`.dockerignore`中最后一行会决定该文是包括还是排除。思考以下例子：
 
 ```
     *.md
@@ -248,10 +180,9 @@ whether it is included or excluded.  Consider the following example:
     README-secret.md
 ```
 
-No markdown files are included in the context except README files other than
-`README-secret.md`.
+在上下文中除了 README 文件（不`README-secret.md`文件），排除所有 markdown 文件。
 
-Now consider this example:
+现在考虑下面例子：
 
 ```
     *.md
@@ -259,192 +190,138 @@ Now consider this example:
     !README*.md
 ```
 
-All of the README files are included.  The middle line has no effect because
-`!README*.md` matches `README-secret.md` and comes last.
+包括所有 README 文件，中间行无效，因为`!README*.md`匹配`README-secret.md`规则，而且在最后一行。
 
-You can even use the `.dockerignore` file to exclude the `Dockerfile`
-and `.dockerignore` files.  These files are still sent to the daemon
-because it needs them to do its job.  But the `ADD` and `COPY` commands
-do not copy them to the image.
+即使用 `.dockerignore` 文件排除 `Dockerfile` 和 `.dockerignore` 文件，这些文件仍然会发送给 daemon，因为这是完成任务必须文件。不过 `ADD` 和 `COPY` 命令并不会把他们复制到镜像中。
 
-Finally, you may want to specify which files to include in the
-context, rather than which to exclude. To achieve this, specify `*` as
-the first pattern, followed by one or more `!` exception patterns.
+最后，还需要指定哪些文件要包含而不是排除在上下文中。为达成目标，要指定 `*` 作第一行模式，后跟一条或多条`!`例外规则模式 。
 
-**Note**: For historical reasons, the pattern `.` is ignored.
+**注意**: 因历史原因，模式 `.` 会被忽略。
 
 ## FROM
 
     FROM <image>
 
-Or
+或
 
     FROM <image>:<tag>
 
-Or
+或
 
     FROM <image>@<digest>
 
-The `FROM` instruction sets the [*Base Image*](https://github.com/docker/docker/blob/master/docs/reference/glossary.md#base-image)
-for subsequent instructions. As such, a valid `Dockerfile` must have `FROM` as
-its first instruction. The image can be any valid image – it is especially easy
-to start by **pulling an image** from the [*Public Repositories*](https://github.com/docker/docker/blob/master/docs/userguide/containers/dockerrepos.md).
+该指令设置 [*Base Image*](https://github.com/docker/docker/blob/master/docs/reference/glossary.md#base-image)，用于后续指令。因此，合法的 `Dockerfile` 文件第一条指令一定是 `FROM`。该镜像可以是任何合法镜像，它可以很容易从 [*Public Repositories*](https://github.com/docker/docker/blob/master/docs/userguide/containers/dockerrepos.md) 中 **pull** 下一个镜像.
 
-- `FROM` must be the first non-comment instruction in the `Dockerfile`.
+- `FROM` 必须是 `Dockerfile` 中第一行非注释的指令。
 
-- `FROM` can appear multiple times within a single `Dockerfile` in order to create
-multiple images. Simply make a note of the last image ID output by the commit
-before each new `FROM` command.
+- `FROM` 为了创建多个镜像，单一 `Dockerfile` 文件中可以出现多次。仅在每个新 `FROM` 命令前记下通过提交输出的最后的镜像ID。
 
-- The `tag` or `digest` values are optional. If you omit either of them, the builder
-assumes a `latest` by default. The builder returns an error if it cannot match
-the `tag` value.
+- `tag` 或 `digest` 值是可选的。如果省略他们，构建器会把 `latest` 作默认值。如果与 `tag` 值不匹配，构建器会返回一个错误。
 
 ## MAINTAINER
 
     MAINTAINER <name>
 
-The `MAINTAINER` instruction allows you to set the *Author* field of the
-generated images.
+该指令允许设置产生镜像的 *Author* 字段。
 
 ## RUN
 
-RUN has 2 forms:
+它有两种形式：
 
-- `RUN <command>` (*shell* form, the command is run in a shell - `/bin/sh -c`)
-- `RUN ["executable", "param1", "param2"]` (*exec* form)
+- `RUN <command>` (*shell* 形式，command 运行在一个 shell 中 - `/bin/sh -c`)
+- `RUN ["executable", "param1", "param2"]` (*exec* 形式)
 
-The `RUN` instruction will execute any commands in a new layer on top of the
-current image and commit the results. The resulting committed image will be
-used for the next step in the `Dockerfile`.
+该指令执行当前镜像顶部新层中的任意命令并提交（commit）结果。提交结果的镜像会用于`Dockerfile`文件中下一步指令。
 
-Layering `RUN` instructions and generating commits conforms to the core
-concepts of Docker where commits are cheap and containers can be created from
-any point in an image's history, much like source control.
+`RUN`指令分层和生成提交符合 Docker 的核心概念：提交方便，可从镜像历史任一点创建容器，非常类似源码版本控制。
 
-The *exec* form makes it possible to avoid shell string munging, and to `RUN`
-commands using a base image that does not contain `/bin/sh`.
+*exec* 形式可以避免shell 字串篡改，而且可以在没有包含 `/bin/sh`的基础镜像(base image)使用  `RUN` 命令。
 
-In the *shell* form you can use a `\` (backslash) to continue a single
-RUN instruction onto the next line. For example, consider these two lines:
+*shell* 形式可以使用 `\` (反斜杠)对单行 RUN 指令续行。举例如下：
 ```
 RUN /bin/bash -c 'source $HOME/.bashrc ;\
 echo $HOME'
 ```
-Together they are equivalent to this single line:
+上例等效于下面一行示例：
 ```
 RUN /bin/bash -c 'source $HOME/.bashrc ; echo $HOME'
 ```
 
-> **Note**:
-> To use a different shell, other than '/bin/sh', use the *exec* form
-> passing in the desired shell. For example,
+> **注意**：
+> 要使用'/bin/sh'之外的其他 shell，就要在 *exec* 形式中传递想要shell的参数，如：
 > `RUN ["/bin/bash", "-c", "echo hello"]`
 
-> **Note**:
-> The *exec* form is parsed as a JSON array, which means that
-> you must use double-quotes (") around words not single-quotes (').
+> **注意**：
+> *exec*形式会被解析成一个JSON数组，这意味着必须使用双引号 (") 而不是单引号(')把文字内容括起来。
 
-> **Note**:
-> Unlike the *shell* form, the *exec* form does not invoke a command shell.
-> This means that normal shell processing does not happen. For example,
-> `RUN [ "echo", "$HOME" ]` will not do variable substitution on `$HOME`.
-> If you want shell processing then either use the *shell* form or execute
-> a shell directly, for example: `RUN [ "sh", "-c", "echo", "$HOME" ]`.
+> **注意**：
+> 与 *shell* 形式不同，*exec*形式不调用命令的 shell。这意味着正常的 shell 操作不起作用。例如，
+> `RUN [ "echo", "$HOME" ]` 其中 `$HOME` 不会做变量替换。
+> 要使用 shell 操作，要么使用 *shell*形式，要么直接执行 shell ，如：`RUN [ "sh", "-c", "echo", "$HOME" ]`。
 
-The cache for `RUN` instructions isn't invalidated automatically during
-the next build. The cache for an instruction like
-`RUN apt-get dist-upgrade -y` will be reused during the next build. The
-cache for `RUN` instructions can be invalidated by using the `--no-cache`
-flag, for example `docker build --no-cache`.
+`RUN`指令的缓存在下次构建期间不会自动失效。比如象 `RUN apt-get dist-upgrade -y` 这样指令的缓存会在下次构建时重用。使用`--no-cache` 标志参数，`RUN`指令的缓存会失效，如：`docker build --no-cache`。
 
-See the [`Dockerfile` Best Practices
-guide](https://github.com/docker/docker/blob/master/docs/userguide/eng-image/dockerfile_best-practices.md#build-cache) for more information.
+详情参阅 [`Dockerfile`最佳实践指南
+guide](https://github.com/docker/docker/blob/master/docs/userguide/eng-image/dockerfile_best-practices.md#build-cache)。
 
-The cache for `RUN` instructions can be invalidated by `ADD` instructions. See
-[below](#add) for details.
+`ADD` 指令操作的 `RUN`指令的缓存也会失效。详情查看[下面](#add)。
 
-### Known issues (RUN)
+### 已知问题 (RUN)
 
-- [Issue 783](https://github.com/docker/docker/issues/783) is about file
-  permissions problems that can occur when using the AUFS file system. You
-  might notice it during an attempt to `rm` a file, for example.
+- [Issue 783](https://github.com/docker/docker/issues/783) 文件权限许可问题，在使用 AUFS 文件系统时会发生。比如尝试 `rm` 一个文件时。
 
-  For systems that have recent aufs version (i.e., `dirperm1` mount option can
-  be set), docker will attempt to fix the issue automatically by mounting
-  the layers with `dirperm1` option. More details on `dirperm1` option can be
-  found at [`aufs` man page](http://aufs.sourceforge.net/aufs3/man.html)
+  对于最近的aufs版本（`dirperm1`挂载项可设置）的几个系统，Docker会尝试自动通过`dirperm1`选项挂载该层来修复该问题。 `dirperm1`选项详情可查看 [`aufs` man page](http://aufs.sourceforge.net/aufs3/man.html)。
 
-  If your system doesn't have support for `dirperm1`, the issue describes a workaround.
+  如果系统不支持 `dirperm1`，该 issue 提供了一个解决办法。
 
 ## CMD
 
-The `CMD` instruction has three forms:
+该指令有三种形式：
 
-- `CMD ["executable","param1","param2"]` (*exec* form, this is the preferred form)
-- `CMD ["param1","param2"]` (as *default parameters to ENTRYPOINT*)
-- `CMD command param1 param2` (*shell* form)
+- `CMD ["executable","param1","param2"]` (*exec*形式, 这是首选形式)
+- `CMD ["param1","param2"]` (用作给ENTRYPOINT提供默认参数)
+- `CMD command param1 param2` (*shell*形式)
 
-There can only be one `CMD` instruction in a `Dockerfile`. If you list more than one `CMD`
-then only the last `CMD` will take effect.
+一个`Dockerfile`文件中只能有一个`CMD`指令。如何列出多个`CMD`指令，则只有最后一个`CMD`指令生效。
 
-**The main purpose of a `CMD` is to provide defaults for an executing
-container.** These defaults can include an executable, or they can omit
-the executable, in which case you must specify an `ENTRYPOINT`
-instruction as well.
+**`CMD`的主要用途是给要执行的容器提供默认值** ，这些默认值可包含一个可执行程序；或者也可省略这个可执行程序，在此情况下，还必须指定一个`ENTRYPOINT`指令。
 
-> **Note**:
-> If `CMD` is used to provide default arguments for the `ENTRYPOINT`
-> instruction, both the `CMD` and `ENTRYPOINT` instructions should be specified
-> with the JSON array format.
+> **注意**：
+> `CMD`常用于给`ENTRYPOINT`指令提供默认参数，`CMD`和`ENTRYPOINT`指令应该以JSON数组格式指定。
 
-> **Note**:
-> The *exec* form is parsed as a JSON array, which means that
-> you must use double-quotes (") around words not single-quotes (').
+> **注意**：
+> *exec*形式会解析成JSON数组，这意味着必须使用双引号(")而不是单引号(')把文字内容括起来。
 
-> **Note**:
-> Unlike the *shell* form, the *exec* form does not invoke a command shell.
-> This means that normal shell processing does not happen. For example,
-> `CMD [ "echo", "$HOME" ]` will not do variable substitution on `$HOME`.
-> If you want shell processing then either use the *shell* form or execute
-> a shell directly, for example: `CMD [ "sh", "-c", "echo", "$HOME" ]`.
+> **注意**：
+> 与*shell*形式不同，*exec*形式不会调用shell命令。这意味着正常的shell操作不会生效。
+> 如`CMD [ "echo", "$HOME" ]`，这不会对`$HOME`做变量替换。
+> 想要shell操作，要么用*shell*形式，要么直接执行一个shell。如 `CMD [ "sh", "-c", "echo", "$HOME" ]`。
 
-When used in the shell or exec formats, the `CMD` instruction sets the command
-to be executed when running the image.
+在使用shell或exec格式时，`CMD`指令会在运行镜像时设置命令去执行。
 
-If you use the *shell* form of the `CMD`, then the `<command>` will execute in
-`/bin/sh -c`:
+如果使用了`CMD`的*shell*形式，那么`<command>`会在`/bin/sh -c`中执行：
 
     FROM ubuntu
     CMD echo "This is a test." | wc -
 
-If you want to **run your** `<command>` **without a shell** then you must
-express the command as a JSON array and give the full path to the executable.
-**This array form is the preferred format of `CMD`.** Any additional parameters
-must be individually expressed as strings in the array:
+如果想在**无shell**的环境中**运行自己的** `<command>`，就必须以JSON数组的格式表示这个命令，并且给出可执行程序的完整路径。
+**数组形式是`CMD`首选格式。** 在数组中，其他任何参数都要单独表示成字符串：
 
     FROM ubuntu
     CMD ["/usr/bin/wc","--help"]
 
-If you would like your container to run the same executable every time, then
-you should consider using `ENTRYPOINT` in combination with `CMD`. See
-[*ENTRYPOINT*](#entrypoint).
+如果想让自己的容器每次运行相同的可执行程序，就要考虑 `ENTRYPOINT` 结合 `CMD`一起使用。可查看 [*ENTRYPOINT*](#entrypoint)。
 
-If the user specifies arguments to `docker run` then they will override the
-default specified in `CMD`.
+如果用户指定了`docker run`参数，那么这些参数会覆盖`CMD`指定的默认值。
 
-> **Note**:
-> don't confuse `RUN` with `CMD`. `RUN` actually runs a command and commits
-> the result; `CMD` does not execute anything at build time, but specifies
-> the intended command for the image.
+> **注意**：
+> 不要混淆 `RUN`和`CMD`。`RUN`实际上运行一个命令就提交该命令的结果；`CMD`在构建时不执行任何命令，不过指明了镜像要执行的命令。
 
 ## LABEL
 
     LABEL <key>=<value> <key>=<value> <key>=<value> ...
 
-The `LABEL` instruction adds metadata to an image. A `LABEL` is a
-key-value pair. To include spaces within a `LABEL` value, use quotes and
-backslashes as you would in command-line parsing. A few usage examples:
+该指令给镜像添加元数据。`LABEL`是一个键值对。为了在`LABEL`值中包括空格，使用引号和反斜杠可在命令行中解析。几个用法示例：
 
     LABEL "com.example.vendor"="ACME Incorporated"
     LABEL com.example.label-with-value="foo"
@@ -452,25 +329,19 @@ backslashes as you would in command-line parsing. A few usage examples:
     LABEL description="This text illustrates \
     that label-values can span multiple lines."
 
-An image can have more than one label. To specify multiple labels,
-Docker recommends combining labels into a single `LABEL` instruction where
-possible. Each `LABEL` instruction produces a new layer which can result in an
-inefficient image if you use many labels. This example results in a single image
-layer.
+一个镜像存在一个以上的label。要使用多个 label，Docker推荐把多个 label 结合成单一一个 `LABEL` 指令中 。每一个`LABEL`指令都会生成一个新层，如果用了许多label，那么这个新层生成的镜像会很低效。本例示范生成一个单一镜像层：
 
     LABEL multi.label1="value1" multi.label2="value2" other="value3"
 
-The above can also be written as:
+以上也可写作：
 
     LABEL multi.label1="value1" \
           multi.label2="value2" \
           other="value3"
 
-Labels are additive including `LABEL`s in `FROM` images. If Docker
-encounters a label/key that already exists, the new value overrides any previous
-labels with identical keys.
+`FROM`镜像中，label是`LABEL`递增（？）。 如果 Docker 遇到一个已经存在的label键值，新值会覆盖前面所有同键名的值。
 
-To view an image's labels, use the `docker inspect` command.
+使用 `docker inspect` 命令可以查看镜像的label：
 
     "Labels": {
         "com.example.vendor": "ACME Incorporated"
@@ -486,119 +357,74 @@ To view an image's labels, use the `docker inspect` command.
 
     EXPOSE <port> [<port>...]
 
-The `EXPOSE` instruction informs Docker that the container listens on the
-specified network ports at runtime. `EXPOSE` does not make the ports of the
-container accessible to the host. To do that, you must use either the `-p` flag
-to publish a range of ports or the `-P` flag to publish all of the exposed
-ports. You can expose one port number and publish it externally under another
-number.
+该指令用于告知 Docker 当前容器在运行时要侦听的网络端口。`EXPOSE`不让容器端口为主机所访问的话，必须使用 `-p` 标志参数发布了端口范围，或者使用 `-P` 标志参数发布所有公开的端口。可以泄露一个端口号，对外以另一个端口号发布。
 
-To set up port redirection on the host system, see [using the -P
-flag](https://github.com/docker/docker/blob/master/docs/reference/run.md#expose-incoming-ports). The Docker network feature supports
-creating networks without the need to expose ports within the network, for
-detailed information see the  [overview of this
-feature](https://github.com/docker/docker/blob/master/docs/userguide/networking/index.md)).
+关于对主机设置端口重定向，参考 [using the -P
+flag](https://github.com/docker/docker/blob/master/docs/reference/run.md#expose-incoming-ports)。 Docker 网络特性支持在网络内不泄露端口的情况下创建网络，详情参阅 [overview of this
+feature](https://github.com/docker/docker/blob/master/docs/userguide/networking/index.md))。
 
 ## ENV
 
     ENV <key> <value>
     ENV <key>=<value> ...
 
-The `ENV` instruction sets the environment variable `<key>` to the value
-`<value>`. This value will be in the environment of all "descendant"
-`Dockerfile` commands and can be [replaced inline](#environment-replacement) in
-many as well.
+该指令设置环境变量 `<key>` 值为 `<value>`。该值会存在于 `Dockerfile`后续命令环境中，并会多次 [内联替换](#environment-replacement)。
 
-The `ENV` instruction has two forms. The first form, `ENV <key> <value>`,
-will set a single variable to a value. The entire string after the first
-space will be treated as the `<value>` - including characters such as
-spaces and quotes.
+`ENV`指令有两种形式。第一种形式，`ENV <key> <value>`，
+给单一变量设置一个值。第一个空格后的整个字串会当作 `<value>`，包括象空格和引号这样的字符。
 
-The second form, `ENV <key>=<value> ...`, allows for multiple variables to
-be set at one time. Notice that the second form uses the equals sign (=)
-in the syntax, while the first form does not. Like command line parsing,
-quotes and backslashes can be used to include spaces within values.
-
-For example:
+第二种形式，`ENV <key>=<value> ...`，允许一次给多个变量赋值。在命令行解析时，要用引号和反斜杠把值内的空格包含起来，例如：
 
     ENV myName="John Doe" myDog=Rex\ The\ Dog \
         myCat=fluffy
 
-and
+以及
 
     ENV myName John Doe
     ENV myDog Rex The Dog
     ENV myCat fluffy
 
-will yield the same net results in the final container, but the first form
-is preferred because it produces a single cache layer.
+二者在最终容器中产生相同结果，不过第一种形式是首选，因为它生成了单一一个缓存层。
 
-The environment variables set using `ENV` will persist when a container is run
-from the resulting image. You can view the values using `docker inspect`, and
-change them using `docker run --env <key>=<value>`.
+当容器运行一个生成结果的镜像时，使用`ENV`设置的环境变量依然会存在。可以通过 `docker inspect`查看它的值，也可以使用`docker run --env <key>=<value>` 去修改它们。
 
-> **Note**:
-> Environment persistence can cause unexpected side effects. For example,
-> setting `ENV DEBIAN_FRONTEND noninteractive` may confuse apt-get
-> users on a Debian-based image. To set a value for a single command, use
-> `RUN <key>=<value> <command>`.
+> **注意**：
+> 环境持久性会导致不可预料的副效应。例如，设置 `ENV DEBIAN_FRONTEND noninteractive` 可能使基于Debian镜像的apt-get
+用户迷惑。要为一条命令只设置一个值，可以使用 `RUN <key>=<value> <command>`。
 
 ## ADD
 
-ADD has two forms:
+它有两种形式：
 
 - `ADD <src>... <dest>`
-- `ADD ["<src>",... "<dest>"]` (this form is required for paths containing
-whitespace)
+- `ADD ["<src>",... "<dest>"]` (对于包含空格的路径是必选形式)
 
-The `ADD` instruction copies new files, directories or remote file URLs from `<src>`
-and adds them to the filesystem of the container at the path `<dest>`.
+该指令会复制从`<scr>`指定的新文件、目录或远程文件URL，把它们添加到`<dest>`路径指定的容器文件系统中。
 
-Multiple `<src>` resource may be specified but if they are files or
-directories then they must be relative to the source directory that is
-being built (the context of the build).
+可以指定多个`<src>`源，如果他们是文件或目录，那么他们必须与要构建源文件夹相关联(构建的上下文)。
 
-Each `<src>` may contain wildcards and matching will be done using Go's
-[filepath.Match](http://golang.org/pkg/path/filepath#Match) rules. For example:
+每一个 `<src>` 都可以包含通配符，并且可用 Go 的 [filepath.Match](http://golang.org/pkg/path/filepath#Match) 规则进行匹配通过。例如：
 
-    ADD hom* /mydir/        # adds all files starting with "hom"
-    ADD hom?.txt /mydir/    # ? is replaced with any single character, e.g., "home.txt"
+    ADD hom* /mydir/        # 添加所有以"hom"开始的文件
+    ADD hom?.txt /mydir/    # ? 可被任意一个单字符替换，如"home.txt"
 
-The `<dest>` is an absolute path, or a path relative to `WORKDIR`, into which
-the source will be copied inside the destination container.
+`<dest>`要写成绝对路径，或是写成相对于`WORKDIR`的路径，源会被复制到目标容器内`<dest>`指定的路径下。
 
-    ADD test relativeDir/          # adds "test" to `WORKDIR`/relativeDir/
-    ADD test /absoluteDir/         # adds "test" to /absoluteDir/
+    ADD test relativeDir/          # 复制到 `WORKDIR`/relativeDir/
+    ADD test /absoluteDir/         # 复制"test" 到 /absoluteDir/
 
-All new files and directories are created with a UID and GID of 0.
+所有新文件和目录在创建时会带一个值为0的 UID 和 GID。
 
-In the case where `<src>` is a remote file URL, the destination will
-have permissions of 600. If the remote file being retrieved has an HTTP
-`Last-Modified` header, the timestamp from that header will be used
-to set the `mtime` on the destination file. However, like any other file
-processed during an `ADD`, `mtime` will not be included in the determination
-of whether or not the file has changed and the cache should be updated.
+如果 `<src>` 是一个远程文件 URL，目标拥有 600 许可权限。如果获取的远程文件有一个HTTP `Last-Modified` header，则该来自该header的时间戳会设置目标文件的`mtime`。不过，象任何其他在`ADD`操作期间处理的文件一样，`mtime` 不会包含在目标文件中，不论该文件改变还是缓存该更新。
 
-> **Note**:
-> If you build by passing a `Dockerfile` through STDIN (`docker
-> build - < somefile`), there is no build context, so the `Dockerfile`
-> can only contain a URL based `ADD` instruction. You can also pass a
-> compressed archive through STDIN: (`docker build - < archive.tar.gz`),
-> the `Dockerfile` at the root of the archive and the rest of the
-> archive will get used at the context of the build.
+> **注意**：
+> 如果是通过把`Dockerfile`传递给 STDIN (`docker build - < somefile`)来构建，那么就没构建的上下文。因此 `Dockerfile` 仅能包含一个基于`ADD`指令的URL。也可以传递一个压缩文档给 STDIN: (`docker build - < archive.tar.gz`)，文档根目录中的 `Dockerfile`和其他文档可以用在构建的上下文中。
 
-> **Note**:
-> If your URL files are protected using authentication, you
-> will need to use `RUN wget`, `RUN curl` or use another tool from
-> within the container as the `ADD` instruction does not support
-> authentication.
+> **注意**：
+> 如果 URL 文件使用了认证保护，那就需要使用 `RUN wget`、`RUN curl` 或其他容器中包含的工具来完成 `ADD` 指令不支持的认证操作。
 
-> **Note**:
-> The first encountered `ADD` instruction will invalidate the cache for all
-> following instructions from the Dockerfile if the contents of `<src>` have
-> changed. This includes invalidating the cache for `RUN` instructions.
-> See the [`Dockerfile` Best Practices
-guide](../userguide/eng-image/dockerfile_best-practices.md#build-cache) for more information.
+> **注意**：
+> 如果`<src>`的内容变化，第一次遇到`ADD`指令会使Dockerfile文件中后续所有指令缓存失效。这包括 `RUN` 指令的缓存失效。详情参阅 [`Dockerfile`最佳实践指南](https://github.com/docker/docker/blob/master/docs/userguide/eng-image/dockerfile_best-practices.md#build-cache) for more information.
 
 
 `ADD` obeys the following rules:
@@ -621,7 +447,7 @@ guide](../userguide/eng-image/dockerfile_best-practices.md#build-cache) for more
 - If `<src>` is a directory, the entire contents of the directory are copied,
   including filesystem metadata.
 
-> **Note**:
+> **注意**：
 > The directory itself is not copied, just its contents.
 
 - If `<src>` is a *local* tar archive in a recognized compression format
@@ -633,7 +459,7 @@ guide](../userguide/eng-image/dockerfile_best-practices.md#build-cache) for more
     2. The contents of the source tree, with conflicts resolved in favor
        of "2." on a file-by-file basis.
 
-  > **Note**:
+  > **注意**：
   > Whether a file is identified as a recognized compression format or not
   > is done solely based on the contents of the file, not the name of the file.
   > For example, if an empty file happens to end with `.tar.gz` this will not
@@ -684,7 +510,7 @@ the source will be copied inside the destination container.
 
 All new files and directories are created with a UID and GID of 0.
 
-> **Note**:
+> **注意**：
 > If you build using STDIN (`docker build - < somefile`), there is no
 > build context, so `COPY` can't be used.
 
@@ -698,7 +524,7 @@ All new files and directories are created with a UID and GID of 0.
 - If `<src>` is a directory, the entire contents of the directory are copied,
   including filesystem metadata.
 
-> **Note**:
+> **注意**：
 > The directory itself is not copied, just its contents.
 
 - If `<src>` is any other kind of file, it is copied individually along with
@@ -866,11 +692,11 @@ sys	0m 0.03s
 > **Note:** you can over ride the `ENTRYPOINT` setting using `--entrypoint`,
 > but this can only set the binary to *exec* (no `sh -c` will be used).
 
-> **Note**:
+> **注意**：
 > The *exec* form is parsed as a JSON array, which means that
 > you must use double-quotes (") around words not single-quotes (').
 
-> **Note**:
+> **注意**：
 > Unlike the *shell* form, the *exec* form does not invoke a command shell.
 > This means that normal shell processing does not happen. For example,
 > `ENTRYPOINT [ "echo", "$HOME" ]` will not do variable substitution on `$HOME`.
@@ -965,11 +791,11 @@ This Dockerfile results in an image that causes `docker run`, to
 create a new mount point at `/myvol` and copy the  `greeting` file
 into the newly created volume.
 
-> **Note**:
+> **注意**：
 > If any build steps change the data within the volume after it has been
 > declared, those changes will be discarded.
 
-> **Note**:
+> **注意**：
 > The list is parsed as a JSON array, which means that
 > you must use double-quotes (") around words not single-quotes (').
 
