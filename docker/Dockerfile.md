@@ -17,22 +17,22 @@ Practices](dockerfile_best-practices.md) 。
 
 ## 用法
 
-[`docker build`](https://github.com/docker/docker/blob/master/docs/reference/commandline/build.md) 命令根据`Dockerfile`及 *上下文* 来构建一个镜像。构建的上下文是指该文件所在的特定位置`PATH`或`URL`。`PATH`是指本地文件系统的目录。`URL`是指 Git 版本库的位置。
+[`docker build`](https://github.com/docker/docker/blob/master/docs/reference/commandline/build.md) 命令根据`Dockerfile`及 *上下文环境* 来构建一个镜像。构建的上下文环境是指该文件所在的特定位置`PATH`或`URL`。`PATH`是指本地文件系统的目录。`URL`是指 Git 版本库的位置。
 
-上下文可以被递归处理。所以，`PATH`包含任意子目录，并且`URL`包含了版本库及其子模块。使用当前目录的上下文可以简化命令：
+上下文环境可以被递归处理。所以，`PATH`包含任意子目录，并且`URL`包含了版本库及其子模块。使用当前目录的上下文环境可以简化命令：
 
     $ docker build .
     Sending build context to Docker daemon  6.51 MB
     ...
 
-该构建是由 Docker daemon 运行的，而非 CLI。构建进程做的头一件事就是把整个上下文（递归）发送给daemon。多数情况下，最好是在一个空目录中做上下文启动，把
+该构建是由 Docker daemon 运行的，而非 CLI。构建进程做的头一件事就是把整个上下文环境（递归）发送给daemon。多数情况下，最好是在一个空目录中做上下文环境启动，把
 Dockerfile 文件放在该目录中。仅添加构建该 Dockerfile 文件所必须的文件在里面。
 
 >**警告**: 不要用目录 `/` 作 `PATH` ，它可能让构建传送硬盘所有内容给 Docker daemon。
 
-为了使用在构建上下文中的某个文件，`Dockerfile` 文件中的指令要具体地指定该文件。例如 `COPY` 指令。为提升构建性能，在上下文目录中可以添加一个 `.dockerignore` 文件以排除不要的文件和目录 。 详情查看本文档的如何创建一个[`.dockerignore`文件](#dockerignore文件)。
+为了使用在构建上下文环境中的某个文件，`Dockerfile` 文件中的指令要具体地指定该文件。例如 `COPY` 指令。为提升构建性能，在上下文环境目录中可以添加一个 `.dockerignore` 文件以排除不要的文件和目录 。 详情查看本文档的如何创建一个[`.dockerignore`文件](#dockerignore文件)。
 
-习惯上，`Dockerfile`被称作`Dockerfile`，并且位于上下文的根路径中。`docker build`用`-f`标志参数指向文件系统中任意位置的 Dockerfile 文件。
+习惯上，`Dockerfile`被称作`Dockerfile`，并且位于上下文环境的根路径中。`docker build`用`-f`标志参数指向文件系统中任意位置的 Dockerfile 文件。
 
     $ docker build -f /path/to/a/Dockerfile .
 
@@ -44,7 +44,7 @@ Dockerfile 文件放在该目录中。仅添加构建该 Dockerfile 文件所必
 
     $ docker build -t shykes/myapp:1.0.2 -t shykes/myapp:latest .
 
-在最终生成新镜像的ID前，Docker daemon 是按顺序依次执行 `Dockerfile` 文件中指令的，同时在必要的情况下，会把每条指令的执行结果提交到新镜像中。Docker daemon 会自动清理干净发送过来的上下文描述信息。
+在最终生成新镜像的ID前，Docker daemon 是按顺序依次执行 `Dockerfile` 文件中指令的，同时在必要的情况下，会把每条指令的执行结果提交到新镜像中。Docker daemon 会自动清理干净发送过来的上下文环境描述信息。
 
 注意，每条指令都是独立运行的，都会产生一个新镜像，所以`RUN cd /tmp`不会对下一条指令有任何影响。
 
@@ -138,9 +138,9 @@ Docker 会把`#`开始的行作为注释。在其他任何位置的 `#` 的标�
 
 ### .dockerignore文件
 
-docker CLI 给 docker daemon 发送上下文前，先在上下文的根目录中寻找名为`.dockerignore`的文件。如果存在，CLI 会修改上下文描述，把匹配该文件中描述的文件和目录排除出去。可避免不必要地发送超大或敏感内容的文件和目录给 daemon，也可避免使用`ADD`或`COPY`把他们添加到镜像中的可能性。
+docker CLI 给 docker daemon 发送上下文环境前，先在上下文环境的根目录中寻找名为`.dockerignore`的文件。如果存在，CLI 会修改上下文环境描述，把匹配该文件中描述的文件和目录排除出去。可避免不必要地发送超大或敏感内容的文件和目录给 daemon，也可避免使用`ADD`或`COPY`把他们添加到镜像中的可能性。
 
-CLI 会把`.dockerignore`文件解析成一个独立行的模式列表，模式类似于 Unix shell 的 file globs。为了模式匹配，上下文的根目录会被看作即是工作目录也是根目录。例如模式 `/foo/bar` 和 `foo/bar`表示，`PATH`下(或是位于`URL`的的git版本库的根目录下)`foo`子目录中名为`bar`的文件或目录被排除。
+CLI 会把`.dockerignore`文件解析成一个独立行的模式列表，模式类似于 Unix shell 的 file globs。为了模式匹配，上下文环境的根目录会被看作即是工作目录也是根目录。例如模式 `/foo/bar` 和 `foo/bar`表示，`PATH`下(或是位于`URL`的的git版本库的根目录下)`foo`子目录中名为`bar`的文件或目录被排除。
 
 这里有个`.dockerignore`文件示例：
 
@@ -161,7 +161,7 @@ CLI 会把`.dockerignore`文件解析成一个独立行的模式列表，模式�
 
 模式匹配是通过 Go 的[filepath.Match](http://golang.org/pkg/path/filepath#Match)规则完成的。通过 Go 的 [filepath.Clean](http://golang.org/pkg/path/filepath/#Clean) 进行预处理步骤会删除前导和尾部空格，并且清除`.` 和 `..` 元素。预处理结束后的空白行会被忽略。
 
-除了 Go 的 filepath.Match 规则，Docker也支持特殊通配符字串`**`，它可匹配任意数量(含0)的目录。如 `**/*.go` 会排除所有目录中（含构建上下文中的根目录）所有以 `.go` 结尾的文件。
+除了 Go 的 filepath.Match 规则，Docker也支持特殊通配符字串`**`，它可匹配任意数量(含0)的目录。如 `**/*.go` 会排除所有目录中（含构建上下文环境中的根目录）所有以 `.go` 结尾的文件。
 
 以`!`起始的行用于设定排除规则的例外项。如下示例：
 
@@ -170,7 +170,7 @@ CLI 会把`.dockerignore`文件解析成一个独立行的模式列表，模式�
     !README.md
 ```
 
-*除了* `README.md`文件外，排除上下文中所有markdown文件。
+*除了* `README.md`文件外，排除上下文环境中所有markdown文件。
 
 `!`例外规则的位置造成的影响：匹配特殊文件的`.dockerignore`中最后一行会决定该文是包括还是排除。思考以下例子：
 
@@ -180,7 +180,7 @@ CLI 会把`.dockerignore`文件解析成一个独立行的模式列表，模式�
     README-secret.md
 ```
 
-在上下文中除了 README 文件（不`README-secret.md`文件），排除所有 markdown 文件。
+在上下文环境中除了 README 文件（不`README-secret.md`文件），排除所有 markdown 文件。
 
 现在考虑下面例子：
 
@@ -194,7 +194,7 @@ CLI 会把`.dockerignore`文件解析成一个独立行的模式列表，模式�
 
 即使用 `.dockerignore` 文件排除 `Dockerfile` 和 `.dockerignore` 文件，这些文件仍然会发送给 daemon，因为这是完成任务必须文件。不过 `ADD` 和 `COPY` 命令并不会把他们复制到镜像中。
 
-最后，还需要指定哪些文件要包含而不是排除在上下文中。为达成目标，要指定 `*` 作第一行模式，后跟一条或多条`!`例外规则模式 。
+最后，还需要指定哪些文件要包含而不是排除在上下文环境中。为达成目标，要指定 `*` 作第一行模式，后跟一条或多条`!`例外规则模式 。
 
 **注意**: 因历史原因，模式 `.` 会被忽略。
 
@@ -401,7 +401,7 @@ feature](https://github.com/docker/docker/blob/master/docs/userguide/networking/
 
 该指令会复制从`<scr>`指定的新文件、目录或远程文件URL，把它们添加到`<dest>`路径指定的容器文件系统中。
 
-可以指定多个`<src>`源，如果他们是文件或目录，那么他们必须与要构建源文件夹相关联(构建的上下文)。
+可以指定多个`<src>`源，如果他们是文件或目录，那么他们必须与要构建源文件夹相关联(构建的上下文环境)。
 
 每一个 `<src>` 都可以包含通配符，并且可用 Go 的 [filepath.Match](http://golang.org/pkg/path/filepath#Match) 规则进行匹配通过。例如：
 
@@ -418,7 +418,7 @@ feature](https://github.com/docker/docker/blob/master/docs/userguide/networking/
 如果 `<src>` 是一个远程文件 URL，目标拥有 600 许可权限。如果获取的远程文件有一个HTTP `Last-Modified` header，则该来自该header的时间戳会设置目标文件的`mtime`。不过，象任何其他在`ADD`操作期间处理的文件一样，`mtime` 不会包含在目标文件中，不论该文件改变还是缓存该更新。
 
 > **注意**：
-> 如果是通过把`Dockerfile`传递给 STDIN (`docker build - < somefile`)来构建，那么就没构建的上下文。因此 `Dockerfile` 仅能包含一个基于`ADD`指令的URL。也可以传递一个压缩文档给 STDIN: (`docker build - < archive.tar.gz`)，文档根目录中的 `Dockerfile`和其他文档可以用在构建的上下文中。
+> 如果是通过把`Dockerfile`传递给 STDIN (`docker build - < somefile`)来构建，那么就没构建的上下文环境。因此 `Dockerfile` 仅能包含一个基于`ADD`指令的URL。也可以传递一个压缩文档给 STDIN: (`docker build - < archive.tar.gz`)，文档根目录中的 `Dockerfile`和其他文档可以用在构建的上下文环境中。
 
 > **注意**：
 > 如果 URL 文件使用了认证保护，那就需要使用 `RUN wget`、`RUN curl` 或其他容器中包含的工具来完成 `ADD` 指令不支持的认证操作。
@@ -427,165 +427,108 @@ feature](https://github.com/docker/docker/blob/master/docs/userguide/networking/
 > 如果`<src>`的内容变化，第一次遇到`ADD`指令会使Dockerfile文件中后续所有指令缓存失效。这包括 `RUN` 指令的缓存失效。详情参阅 [`Dockerfile`最佳实践指南](https://github.com/docker/docker/blob/master/docs/userguide/eng-image/dockerfile_best-practices.md#build-cache) for more information.
 
 
-`ADD` obeys the following rules:
+`ADD` 遵从以下规则：
 
-- The `<src>` path must be inside the *context* of the build;
-  you cannot `ADD ../something /something`, because the first step of a
-  `docker build` is to send the context directory (and subdirectories) to the
-  docker daemon.
+- `<src>`路径一定要在构建的*上下文环境*内；不可以`ADD ../something /something`，原因是`docker build`操作的第一步就是发送上下文环境目录（或子目录）给 docker daemon。
 
-- If `<src>` is a URL and `<dest>` does not end with a trailing slash, then a
-  file is downloaded from the URL and copied to `<dest>`.
+- 如果 `<src>` 是 URL，并且 `<dest>` 尾部不是以斜杠结束，那么会从该 URL 下载文件，并把它复制给 `<dest>`。
 
-- If `<src>` is a URL and `<dest>` does end with a trailing slash, then the
-  filename is inferred from the URL and the file is downloaded to
-  `<dest>/<filename>`. For instance, `ADD http://example.com/foobar /` would
-  create the file `/foobar`. The URL must have a nontrivial path so that an
-  appropriate filename can be discovered in this case (`http://example.com`
-  will not work).
+- 如果 `<src>` 是 URL，并且 `<dest>` 尾部是以斜杠结束，那么就会根据 URL 推断出文件名<filename>，然后该文件会下载给 `<dest>/<filename>`。例如 `ADD http://example.com/foobar /` 会创建文件 `/foobar`。URL 一定要有一个普通的路径，这样就可以发现适当的文件名 (如果是 `http://example.com` 就不会有效)。
 
-- If `<src>` is a directory, the entire contents of the directory are copied,
-  including filesystem metadata.
+- 如果 `<src>` 是个目录，目录的整个内容会被复制，包括文件系统的元数据。
 
 > **注意**：
-> The directory itself is not copied, just its contents.
+> 目录自身不会被复制，仅仅复制它的内容。
 
-- If `<src>` is a *local* tar archive in a recognized compression format
-  (identity, gzip, bzip2 or xz) then it is unpacked as a directory. Resources
-  from *remote* URLs are **not** decompressed. When a directory is copied or
-  unpacked, it has the same behavior as `tar -x`: the result is the union of:
+- 如果 `<src>` 是个*本地*可识别压缩格式（gzip、bzip2或xz）的 tar 文档，那么它会作为一个目录拆包解压。*远程* URL的 `<src>` **不会**解压。当目录被复制或拆包解压时，其操作方式与`tar -x`相同： the result is the union of:
 
-    1. Whatever existed at the destination path and
+    1. （？无论目标路径存在什么内容） Whatever existed at the destination path and
     2. The contents of the source tree, with conflicts resolved in favor
        of "2." on a file-by-file basis.
 
   > **注意**：
-  > Whether a file is identified as a recognized compression format or not
-  > is done solely based on the contents of the file, not the name of the file.
-  > For example, if an empty file happens to end with `.tar.gz` this will not
-  > be recognized as a compressed file and **will not** generate any kind of
-  > decompression error message, rather the file will simply be copied to the
-  > destination.
+  > 判断文件是否是可识别压缩格式，仅仅基于文件本身的内容，而不是文件名称。例如，一个以`.tar.gz`结尾的空文件并不会被当作压缩文件，并且**不会**生成任何任何解压缩报错信息。相反，该文件只会被简单地复制到目标路径中。
 
-- If `<src>` is any other kind of file, it is copied individually along with
-  its metadata. In this case, if `<dest>` ends with a trailing slash `/`, it
-  will be considered a directory and the contents of `<src>` will be written
-  at `<dest>/base(<src>)`.
+- 如果 `<src>` 是任意其他类型的文件，就会按和它自身的元数据一起单独复制。在这种情况下，如果 `<dest>` 尾部是斜杠 `/` 结束，这会被当作目录，并且 `<src>` 的内容会写入到 `<dest>/base(<src>)`。
 
-- If multiple `<src>` resources are specified, either directly or due to the
-  use of a wildcard, then `<dest>` must be a directory, and it must end with
-  a slash `/`.
+- 如果指定了多个 `<src>` 资源，或是直接指定或是使用了通配符，那么 `<dest>` 必须是目录并且以斜杠 `/` 结束。
 
-- If `<dest>` does not end with a trailing slash, it will be considered a
-  regular file and the contents of `<src>` will be written at `<dest>`.
+- `<dest>`不是以斜杠结束，这会被当作一个正常文件，并且 `<src>` 的内容会写入到 `<dest>`中。
 
-- If `<dest>` doesn't exist, it is created along with all missing directories
-  in its path.
+- 如果 `<dest>` 不存在，在它的路径内连同所有遗失的目录一并创建。
 
 ## COPY
 
-COPY has two forms:
+有两种形式：
 
 - `COPY <src>... <dest>`
-- `COPY ["<src>",... "<dest>"]` (this form is required for paths containing
-whitespace)
+- `COPY ["<src>",... "<dest>"]` (该形式要求路径中包含空格)
 
-The `COPY` instruction copies new files or directories from `<src>`
-and adds them to the filesystem of the container at the path `<dest>`.
+该指令复制`<src>`中的新文件或目录，并把他们添加到容器`<dest>`路径指定的文件系统中。
 
-Multiple `<src>` resource may be specified but they must be relative
-to the source directory that is being built (the context of the build).
+可以指定多个 `<src>` 资源，他们必须是要构建源目录(构建的上下文环境)内的相对路径。
 
-Each `<src>` may contain wildcards and matching will be done using Go's
-[filepath.Match](http://golang.org/pkg/path/filepath#Match) rules. For example:
+每个 `<src>` 都可以包含通配符，并且用 Go 的 [filepath.Match](http://golang.org/pkg/path/filepath#Match) 规则进行匹配操作。如：
 
-    COPY hom* /mydir/        # adds all files starting with "hom"
-    COPY hom?.txt /mydir/    # ? is replaced with any single character, e.g., "home.txt"
+    COPY hom* /mydir/        # 添加所有以"hom"开始的文件
+    COPY hom?.txt /mydir/    # ? 替换任意一个单一字符，如 "home.txt"
 
-The `<dest>` is an absolute path, or a path relative to `WORKDIR`, into which
-the source will be copied inside the destination container.
+`<dest>` 是个绝对路径，或是相对于`WORKDIR`的路径，源文件要复制进去的地方在目标容器内部。
 
-    COPY test relativeDir/   # adds "test" to `WORKDIR`/relativeDir/
-    COPY test /absoluteDir/  # adds "test" to /absoluteDir/
+    COPY test relativeDir/   # 添加 "test" 到 `WORKDIR`/relativeDir/
+    COPY test /absoluteDir/  # 添加 "test" 到 /absoluteDir/
 
-All new files and directories are created with a UID and GID of 0.
+所有创建新文件和目录的UID和GID是0。
+
 
 > **注意**：
-> If you build using STDIN (`docker build - < somefile`), there is no
-> build context, so `COPY` can't be used.
+> 如果构建使用 STDIN (`docker build - < somefile`)，那么就不会构建的上下文环境，那么`COPY`也就不能使用了。
 
-`COPY` obeys the following rules:
+`COPY` 遵循以下规则：
 
-- The `<src>` path must be inside the *context* of the build;
-  you cannot `COPY ../something /something`, because the first step of a
-  `docker build` is to send the context directory (and subdirectories) to the
-  docker daemon.
+- `<src>` 路径必须存在于构建的 *上下文环境* 中；不能进行 `COPY ../something /something` 操作，原因是 `docker build` 操作的第一步就是把上下文环境目录 (以及子目录) 发送给 docker daemon 。
 
-- If `<src>` is a directory, the entire contents of the directory are copied,
-  including filesystem metadata.
+- 如果 `<src>` 是目录，目录的整个内容会被复制，包括文件系统元数据。
 
 > **注意**：
-> The directory itself is not copied, just its contents.
+> 目录自身不会被复制，仅复制内容。
 
-- If `<src>` is any other kind of file, it is copied individually along with
-  its metadata. In this case, if `<dest>` ends with a trailing slash `/`, it
-  will be considered a directory and the contents of `<src>` will be written
-  at `<dest>/base(<src>)`.
+- 如果 `<src>` 是任何其他类型文件，它会和它的元数据一起单独复制。在此情况下，如果 `<dest>` 以斜杠 `/` 结尾，它会当作目录，并且 `<src>` 会写入到 `<dest>/base(<src>)`。
 
-- If multiple `<src>` resources are specified, either directly or due to the
-  use of a wildcard, then `<dest>` must be a directory, and it must end with
-  a slash `/`.
+- 如果指定了多个 `<src>` 资源，或是直接或是使用通配符，那么 `<dest>` 必须是目录，必须以斜杠 `/` 结尾。
 
-- If `<dest>` does not end with a trailing slash, it will be considered a
-  regular file and the contents of `<src>` will be written at `<dest>`.
+- 如果 `<dest>` 不是以斜杠结尾，这会被当作普通文件，`<src>` 的内容会写入 `<dest>` 中。
 
-- If `<dest>` doesn't exist, it is created along with all missing directories
-  in its path.
+- 如果 `<dest>` 不存在，在它的路径内连同所有遗失的目录会一并创建。
 
 ## ENTRYPOINT
 
-ENTRYPOINT has two forms:
+ENTRYPOINT 有两种形式：
 
-- `ENTRYPOINT ["executable", "param1", "param2"]`
-  (*exec* form, preferred)
-- `ENTRYPOINT command param1 param2`
-  (*shell* form)
+- `ENTRYPOINT ["executable", "param1", "param2"]`    (*exec*形式，首选)
+- `ENTRYPOINT command param1 param2`    (*shell*形式)
 
-An `ENTRYPOINT` allows you to configure a container that will run as an executable.
+`ENTRYPOINT`可以配置将运行的容器。
 
-For example, the following will start nginx with its default content, listening
-on port 80:
+例如，下面的操作会让 nginx 随它的默认内容启动，并且侦听 80 端口：
 
     docker run -i -t --rm -p 80:80 nginx
 
-Command line arguments to `docker run <image>` will be appended after all
-elements in an *exec* form `ENTRYPOINT`, and will override all elements specified
-using `CMD`.
-This allows arguments to be passed to the entry point, i.e., `docker run <image> -d`
-will pass the `-d` argument to the entry point.
-You can override the `ENTRYPOINT` instruction using the `docker run --entrypoint`
-flag.
+`docker run <image>` 的命令行参数出现在*exec*形式`ENTRYPOINT`的全部元素后面，并且这些元素会覆盖`CMD`指定的所有元素。它允许传参给进入点（entry point），如 `docker run <image> -d` 会传`-d`参数给进入点。使用`docker run --entrypoint`标志参数可以覆盖`ENTRYPOINT`指令。
 
-The *shell* form prevents any `CMD` or `run` command line arguments from being
-used, but has the disadvantage that your `ENTRYPOINT` will be started as a
-subcommand of `/bin/sh -c`, which does not pass signals.
-This means that the executable will not be the container's `PID 1` - and
-will _not_ receive Unix signals - so your executable will not receive a
-`SIGTERM` from `docker stop <container>`.
+*shell*形式会禁止使用任何`CMD`或`run`命令行参数，这带来的弊端就是`ENTRYPOINT`会作为`/bin/sh -c`的子命令启动，它不传递信号(signal)。这意味着该执行程序不会是容器的 `PID 1` - 并且 _不_ 会接收Unix信号，这会使该执行程序不会接收到来自`docker stop <container>`发送的`SIGTERM`信号。
 
-Only the last `ENTRYPOINT` instruction in the `Dockerfile` will have an effect.
+`Dockerfile`文件中，只有最后一条 `ENTRYPOINT` 指令会起作用。
 
-### Exec form ENTRYPOINT example
+### Exec形式的ENTRYPOINT示例
 
-You can use the *exec* form of `ENTRYPOINT` to set fairly stable default commands
-and arguments and then use either form of `CMD` to set additional defaults that
-are more likely to be changed.
+可以使用`ENTRYPOINT`的*exec*形式设置相当稳定的默认命令和参数，然后使用`CMD`的一种形式设置其他变化频率较高的默认值。
 
     FROM ubuntu
     ENTRYPOINT ["top", "-b"]
     CMD ["-c"]
 
-When you run the container, you can see that `top` is the only process:
+运行这个容器时，可以看到 `top` 命令是唯一进程：
 
     $ docker run -it --rm --name test  top -H
     top - 08:25:00 up  7:27,  0 users,  load average: 0.00, 0.01, 0.05
@@ -597,17 +540,16 @@ When you run the container, you can see that `top` is the only process:
       PID USER      PR  NI    VIRT    RES    SHR S %CPU %MEM     TIME+ COMMAND
         1 root      20   0   19744   2336   2080 R  0.0  0.1   0:00.04 top
 
-To examine the result further, you can use `docker exec`:
+想要深入检测，可以使用 `docker exec`：
 
     $ docker exec -it test ps aux
     USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
     root         1  2.6  0.1  19752  2352 ?        Ss+  08:24   0:00 top -b -H
     root         7  0.0  0.1  15572  2164 ?        R+   08:25   0:00 ps aux
 
-And you can gracefully request `top` to shut down using `docker stop test`.
+可以优雅地使用`docker stop test` 请求 `top` 关闭。
 
-The following `Dockerfile` shows using the `ENTRYPOINT` to run Apache in the
-foreground (i.e., as `PID 1`):
+下面的 `Dockerfile` 文件显示，使用`ENTRYPOINT`在前台运行 Apache：
 
 ```
 FROM debian:stable
@@ -617,9 +559,7 @@ VOLUME ["/var/www", "/var/log/apache2", "/etc/apache2"]
 ENTRYPOINT ["/usr/sbin/apache2ctl", "-D", "FOREGROUND"]
 ```
 
-If you need to write a starter script for a single executable, you can ensure that
-the final executable receives the Unix signals by using `exec` and `gosu`
-commands:
+如果要给一个执行程序写一个启动脚本，就要确保这个最终执行程序接收到由`exec`和`gosu`命令发送的Unix信号：
 
 ```bash
 #!/bin/bash
@@ -638,10 +578,7 @@ fi
 exec "$@"
 ```
 
-Lastly, if you need to do some extra cleanup (or communicate with other containers)
-on shutdown, or are co-ordinating more than one executable, you may need to ensure
-that the `ENTRYPOINT` script receives the Unix signals, passes them on, and then
-does some more work:
+最后，在shutdown时还要做一下额外清理工作（或与其他容器通信工作），或是协调多个可执行程序，确保 `ENTRYPOINT` 脚本接收到Unix信号，传递信号，然后做得更多：
 
 ```
 #!/bin/sh
@@ -689,34 +626,23 @@ user	0m 0.03s
 sys	0m 0.03s
 ```
 
-> **Note:** you can over ride the `ENTRYPOINT` setting using `--entrypoint`,
+> **注意**： 使用`--entrypoint`可以覆盖 `ENTRYPOINT` 设置，
 > but this can only set the binary to *exec* (no `sh -c` will be used).
 
 > **注意**：
-> The *exec* form is parsed as a JSON array, which means that
-> you must use double-quotes (") around words not single-quotes (').
+> *exec*形式会被解析成JSON数组，也就是说必须使用双引号(")而非引号(')括起文字内容。
 
 > **注意**：
-> Unlike the *shell* form, the *exec* form does not invoke a command shell.
-> This means that normal shell processing does not happen. For example,
-> `ENTRYPOINT [ "echo", "$HOME" ]` will not do variable substitution on `$HOME`.
-> If you want shell processing then either use the *shell* form or execute
-> a shell directly, for example: `ENTRYPOINT [ "sh", "-c", "echo", "$HOME" ]`.
-> Variables that are defined in the `Dockerfile`using `ENV`, will be substituted by
-> the `Dockerfile` parser.
+> 不同于*shell*形式，*exec*形式不调用命令shell。也就是说，常规的shell操作不会起作用。如 `ENTRYPOINT [ "echo", "$HOME" ]` 不会对`$HOME`产生变量替换。要想使用shell操作，要么使用*shell*形式，要么直接执行一个shell，如 `ENTRYPOINT [ "sh", "-c", "echo", "$HOME" ]`。`Dockerfile`文件中使用`ENV`定义的变量会被`Dockerfile`解析器替换。
 
-### Shell form ENTRYPOINT example
+### Shell形式的ENTRYPOINT示例
 
-You can specify a plain string for the `ENTRYPOINT` and it will execute in `/bin/sh -c`.
-This form will use shell processing to substitute shell environment variables,
-and will ignore any `CMD` or `docker run` command line arguments.
-To ensure that `docker stop` will signal any long running `ENTRYPOINT` executable
-correctly, you need to remember to start it with `exec`:
+可以在`ENTRYPOINT`中指定一个纯字符串，它会在`/bin/sh -c`中执行。该形式使用shell操作来替换shell环境变量，而且会忽视任何 `CMD` 或 `docker run` 命令行的参数。要确保`docker stop`可以正确发送信号给任何持久运行的`ENTRYPOINT`可执行程序，就要牢记以 `exec` 启动它：
 
     FROM ubuntu
     ENTRYPOINT exec top -b
 
-When you run this image, you'll see the single `PID 1` process:
+运行该镜像可以看到一个单一 `PID 1` 进程：
 
     $ docker run -it --rm --name test top
     Mem: 1704520K used, 352148K free, 0K shrd, 0K buff, 140368121167873K cached
@@ -725,7 +651,7 @@ When you run this image, you'll see the single `PID 1` process:
       PID  PPID USER     STAT   VSZ %VSZ %CPU COMMAND
         1     0 root     R     3164   0%   0% top -b
 
-Which will exit cleanly on `docker stop`:
+执行`docker stop`，可以清洁环保地退出：
 
     $ /usr/bin/time docker stop test
     test
@@ -733,13 +659,13 @@ Which will exit cleanly on `docker stop`:
     user	0m 0.02s
     sys	0m 0.04s
 
-If you forget to add `exec` to the beginning of your `ENTRYPOINT`:
+如果没有在`ENTRYPOINT`开始处添加`exec`：
 
     FROM ubuntu
     ENTRYPOINT top -b
     CMD --ignored-param1
 
-You can then run it (giving it a name for the next step):
+运行它 (为下一步操作给它命名)：
 
     $ docker run -it --name test top --ignored-param2
     Mem: 1704184K used, 352484K free, 0K shrd, 0K buff, 140621524238337K cached
@@ -749,10 +675,9 @@ You can then run it (giving it a name for the next step):
         1     0 root     S     3168   0%   0% /bin/sh -c top -b cmd cmd2
         7     1 root     R     3164   0%   0% top -b
 
-You can see from the output of `top` that the specified `ENTRYPOINT` is not `PID 1`.
+可以看到`ENTRYPOINT`指定的程序 `top` 输出，它不是`PID 1`。
 
-If you then run `docker stop test`, the container will not exit cleanly - the
-`stop` command will be forced to send a `SIGKILL` after the timeout:
+运行 `docker stop test`，容器就不会清洁环保地退出了 - 在一段延时后，`stop`命令会强制发送了一个 `SIGKILL` 信号：
 
     $ docker exec -it test ps aux
     PID   USER     COMMAND
@@ -769,89 +694,64 @@ If you then run `docker stop test`, the container will not exit cleanly - the
 
     VOLUME ["/data"]
 
-The `VOLUME` instruction creates a mount point with the specified name
-and marks it as holding externally mounted volumes from native host or other
-containers. The value can be a JSON array, `VOLUME ["/var/log/"]`, or a plain
-string with multiple arguments, such as `VOLUME /var/log` or `VOLUME /var/log
-/var/db`. For more information/examples and mounting instructions via the
-Docker client, refer to
-[*Share Directories via Volumes*](https://github.com/docker/docker/blob/master/docs/userguide/containers/dockervolumes.md#mount-a-host-directory-as-a-data-volume)
-documentation.
+`VOLUME`指令创建了一个指定名称的挂载点，标记它为来自本地主机或其他容器的外部挂载卷。它的值可以是JSON数组（`VOLUME ["/var/log/"]`），或是带多个参数的纯字符串（`VOLUME /var/log` 或 `VOLUME /var/log
+/var/db`）。更多信息、示例和挂载指令参考 [*用卷共享目录*](https://github.com/docker/docker/blob/master/docs/userguide/containers/dockervolumes.md#mount-a-host-directory-as-a-data-volume)
 
-The `docker run` command initializes the newly created volume with any data
-that exists at the specified location within the base image. For example,
-consider the following Dockerfile snippet:
+`docker run`命令会用基础镜像中指定位置已经存在的数据对新创建的卷进行初始化。例如下面的 Dockerfile 片断：
 
     FROM ubuntu
     RUN mkdir /myvol
     RUN echo "hello world" > /myvol/greeting
     VOLUME /myvol
 
-This Dockerfile results in an image that causes `docker run`, to
-create a new mount point at `/myvol` and copy the  `greeting` file
-into the newly created volume.
+这个 Dockerfile 文件产生了一个镜像，它在新创建了一个`/myvol`挂载点，并且把 `greeting` 文件复制进新创建的卷中。
 
 > **注意**：
-> If any build steps change the data within the volume after it has been
-> declared, those changes will be discarded.
+> 如果卷已经被声明，则该卷内任何构建操作所带来的数据变化都会被丢弃。
 
 > **注意**：
-> The list is parsed as a JSON array, which means that
-> you must use double-quotes (") around words not single-quotes (').
+> 该列表被解析成JSON数组，也就是说必须使用双引号(")而非引号(')把文字内容括起来。
 
 ## USER
 
     USER daemon
 
-The `USER` instruction sets the user name or UID to use when running the image
-and for any `RUN`, `CMD` and `ENTRYPOINT` instructions that follow it in the
-`Dockerfile`.
+`USER` 指令用于设定运行镜像时要使用的用户名或 UID，它也用于`Dockerfile`文件中任何 `RUN`、`CMD`以及`ENTRYPOINT`指令。
 
 ## WORKDIR
 
     WORKDIR /path/to/workdir
 
-The `WORKDIR` instruction sets the working directory for any `RUN`, `CMD`,
-`ENTRYPOINT`, `COPY` and `ADD` instructions that follow it in the `Dockerfile`.
+`WORKDIR`指令用于设置`Dockerfile`文件中任何`RUN`、`CMD`、`ENTRYPOINT`、`COPY`以及`ADD`指令执行的工作目录。
 
-It can be used multiple times in the one `Dockerfile`. If a relative path
-is provided, it will be relative to the path of the previous `WORKDIR`
-instruction. For example:
+一个`Dockerfile`文件可以使用它多次。如果提供的是相对路径，这会相对于前一个`WORKDIR`的路径，如：
 
     WORKDIR /a
     WORKDIR b
     WORKDIR c
     RUN pwd
 
-The output of the final `pwd` command in this `Dockerfile` would be
-`/a/b/c`.
+最后 `pwd` 命令输出结果会是 `/a/b/c`。
 
-The `WORKDIR` instruction can resolve environment variables previously set using
-`ENV`. You can only use environment variables explicitly set in the `Dockerfile`.
-For example:
+`WORKDIR`指令可以解析前面使用`ENV`设置的环境变量。可以显式地使用`Dockerfile`中设置的环境变量。例如：
 
     ENV DIRPATH /path
     WORKDIR $DIRPATH/$DIRNAME
     RUN pwd
 
-The output of the final `pwd` command in this `Dockerfile` would be
-`/path/$DIRNAME`
+`pwd`命令的最终输出结果是`/path/$DIRNAME`
 
 ## ARG
 
     ARG <name>[=<default value>]
 
-The `ARG` instruction defines a variable that users can pass at build-time to
-the builder with the `docker build` command using the `--build-arg
-<varname>=<value>` flag. If a user specifies a build argument that was not
-defined in the Dockerfile, the build outputs an error.
+`ARG`指令定义了一个变量，用户在构建时可以把它传给使用`docker build`命令参数是`--build-arg <varname>=<value>`的构建者。如果用指定了一个没有在Dockerfile中定义的构建参数，则构建会输出错误信息。
 
 ```
 One or more build-args were not consumed, failing build.
 ```
 
-The Dockerfile author can define a single variable by specifying `ARG` once or many
-variables by specifying `ARG` more than once. For example, a valid Dockerfile:
+Dockerfile 的作者信息可以通过指定`ARG`一次定义一个变量，也可以指定多次定义多个变量。例如：
 
 ```
 FROM busybox
@@ -860,7 +760,7 @@ ARG buildno
 ...
 ```
 
-A Dockerfile author may optionally specify a default value for an `ARG` instruction:
+Dockerfile的作者信息可以选择用一个 `ARG` 指令指定一个默认值：
 
 ```
 FROM busybox
@@ -869,12 +769,9 @@ ARG buildno=1
 ...
 ```
 
-If an `ARG` value has a default and if there is no value passed at build-time, the
-builder uses the default.
+如果 `ARG` 值已经有默认的，并且在构建时没有值传递，那么构建器使用默认值。
 
-An `ARG` variable definition comes into effect from the line on which it is
-defined in the `Dockerfile` not from the argument's use on the command-line or
-elsewhere.  For example, consider this Dockerfile:
+一个`ARG`变量定义生效是从`Dockerfile`中被定义那一行开始的，并不是从命令行或其他地方使用这个参数开始。例如，思考以下Dockerfile文件：
 
 ```
 1 FROM busybox
@@ -883,24 +780,17 @@ elsewhere.  For example, consider this Dockerfile:
 4 USER $user
 ...
 ```
-A user builds this file by calling:
+用户通过回调来构建文件：
 
 ```
 $ docker build --build-arg user=what_user Dockerfile
 ```
 
-The `USER` at line 2 evaluates to `some_user` as the `user` variable is defined on the
-subsequent line 3. The `USER` at line 4 evaluates to `what_user` as `user` is
-defined and the `what_user` value was passed on the command line. Prior to its definition by an
-`ARG` instruction, any use of a variable results in an empty string.
+第二行的 `USER` 等于 `some_user`，而`user`变量在第三行被定义。第四行`USER`等于`what_user`，而`user`已经被定义，并且`what_user`值也通过命令行传递了。如果先于`ARG`指令的定义，任何变量使用的结果值都是空字串。
 
-> **Note:** It is not recommended to use build-time variables for
->  passing secrets like github keys, user credentials etc.
+> **注意**： 不建议构建时（build-time）变量用于传递象github密钥、用户证书等的数据。
 
-You can use an `ARG` or an `ENV` instruction to specify variables that are
-available to the `RUN` instruction. Environment variables defined using the
-`ENV` instruction always override an `ARG` instruction of the same name. Consider
-this Dockerfile with an `ENV` and `ARG` instruction.
+可以使用 `ARG` 或 `ENV` 指令指明 `RUN` 指令可用的变量。`ENV`指令定义的环境变量总是覆盖`ARG`指令定义的同名变量。示例：
 
 ```
 1 FROM ubuntu
@@ -908,19 +798,15 @@ this Dockerfile with an `ENV` and `ARG` instruction.
 3 ENV CONT_IMG_VER v1.0.0
 4 RUN echo $CONT_IMG_VER
 ```
-Then, assume this image is built with this command:
+假定镜像是由以下命令构建：
 
 ```
 $ docker build --build-arg CONT_IMG_VER=v2.0.1 Dockerfile
 ```
 
-In this case, the `RUN` instruction uses `v1.0.0` instead of the `ARG` setting
-passed by the user:`v2.0.1` This behavior is similar to a shell
-script where a locally scoped variable overrides the variables passed as
-arguments or inherited from environment, from its point of definition.
+`RUN`指令使用的值是`v1.0.0`而不是由用户传递的`ARG`设置值`v2.0.1`。与此可作类比的是shell脚本中局部域变量，从它定义位置开始，它会覆盖作为传参或继承自环境的变量。
 
-Using the example above but a different `ENV` specification you can create more
-useful interactions between `ARG` and `ENV` instructions:
+继续上面的示例，不过对`ENV`说明做些修改：
 
 ```
 1 FROM ubuntu
@@ -929,23 +815,18 @@ useful interactions between `ARG` and `ENV` instructions:
 4 RUN echo $CONT_IMG_VER
 ```
 
-Unlike an `ARG` instruction, `ENV` values are always persisted in the built
-image. Consider a docker build without the --build-arg flag:
+不同于`ARG`指令，`ENV`值一直存在于构建镜像过程中。思考 Docker 构建不带`--build-arg`标志参数：
 
 ```
 $ docker build Dockerfile
 ```
 
-Using this Dockerfile example, `CONT_IMG_VER` is still persisted in the image but
-its value would be `v1.0.0` as it is the default set in line 3 by the `ENV` instruction.
+本例中，`CONT_IMG_VER`一直存在于镜像中，它的值是`v1.0.0`，该值是第三行的`ENV`指令定义的默认值。
 
-The variable expansion technique in this example allows you to pass arguments
-from the command line and persist them in the final image by leveraging the
-`ENV` instruction. Variable expansion is only supported for [a limited set of
-Dockerfile instructions.](#environment-replacement)
+本例中的变量扩展技巧让你可以从命令行传参，也可以通过`ENV`指令让最终镜像中变量进行持久化。变量扩展仅支持 [有限的
+Dockerfile 指令集合](#environment-replacement)
 
-Docker has a set of predefined `ARG` variables that you can use without a
-corresponding `ARG` instruction in the Dockerfile.
+Docker 有一个预定义好的`ARG`变量集合，在Dockerfile文件中不需要`ARG`指定定义直接使用：
 
 * `HTTP_PROXY`
 * `http_proxy`
@@ -956,16 +837,11 @@ corresponding `ARG` instruction in the Dockerfile.
 * `NO_PROXY`
 * `no_proxy`
 
-To use these, simply pass them on the command line using the `--build-arg
-<varname>=<value>` flag.
+命令行中使用 `--build-arg <varname>=<value>`标志参数即可会参使用。
 
-### Impact on build caching
+### 影响构建缓存
 
-`ARG` variables are not persisted into the built image as `ENV` variables are.
-However, `ARG` variables do impact the build cache in similar ways. If a
-Dockerfile defines an `ARG` variable whose value is different from a previous
-build, then a "cache miss" occurs upon its first usage, not its declaration.
-For example, consider this Dockerfile:
+`ARG`变量并不象`ENV`变量持久化到构建的镜像中。不过 `ARG` 变量可以类似方式对构建缓存加以影响。如果 Dockerfile 文件定义了一个 `ARG` 变量，该变量值与以前的构建不相同，这时就会在第一次使用（不是声明）时生一个 “cache miss”。例如：
 
 ```
 1 FROM ubuntu
@@ -973,14 +849,10 @@ For example, consider this Dockerfile:
 3 RUN echo $CONT_IMG_VER
 ```
 
-If you specify `--build-arg CONT_IMG_VER=<value>` on the command line the
-specification on line 2 does not cause a cache miss; line 3 does cause a cache
-miss. The definition on line 2 has no impact on the resulting image. The `RUN`
-on line 3 executes a command and in doing so defines a set of environment
-variables, including `CONT_IMG_VER`. At that point, the `ARG` variable may
-impact the resulting image, so a cache miss occurs.
+如果在命令行中指定 `--build-arg CONT_IMG_VER=<value>`，第二行的语句并不会产生“cache miss”；第三行会生成“cache
+miss”。第二行的定义并不会对结果镜像有丝毫影响。第三行`RUN`执行了一个命令，会定义一系列的环境变量，包括 `CONT_IMG_VER`。此时，`ARG`变量对结果镜像产生了影响，cache miss发生了。
 
-Consider another example under the same command line:
+同一命令行下，思考另一个例子：
 
 ```
 1 FROM ubuntu
@@ -988,26 +860,17 @@ Consider another example under the same command line:
 3 ENV CONT_IMG_VER $CONT_IMG_VER
 4 RUN echo $CONT_IMG_VER
 ```
-In this example, the cache miss occurs on line 3. The miss happens because
-the variable's value in the `ENV` references the `ARG` variable and that
-variable is changed through the command line. In this example, the `ENV`
-command causes the image to include the value.
+本例中，cache miss 发生在第三行。原因是`ENV`变量的值引用了`ARG`的变量，该值因命令行传参导致了变化。本例中，`ENV`命令会让镜像包含这个值。
 
 ## ONBUILD
 
     ONBUILD [INSTRUCTION]
 
-The `ONBUILD` instruction adds to the image a *trigger* instruction to
-be executed at a later time, when the image is used as the base for
-another build. The trigger will be executed in the context of the
-downstream build, as if it had been inserted immediately after the
-`FROM` instruction in the downstream `Dockerfile`.
+`ONBUILD`指令给镜像添加了一个会在以后执行的*触发器*指令，当该镜像被当作另一个构建的基础镜像时会触发。该触发器会在下游构建（downstream build）的上下文环境中执行，就好像它已经插入到下游`Dockerfile`文件中`FROM`指令的后面了。
 
-Any build instruction can be registered as a trigger.
+任何构建指定都可以注册成触发器。
 
-This is useful if you are building an image which will be used as a base
-to build other images, for example an application build environment or a
-daemon which may be customized with user-specific configuration.
+如果你构建一个镜像，而它可能会被作为基础镜像而构建其他镜像，那么这个指令会很有用。例如，针对特定用户配置而定制的应用构建环境或守护进程。
 
 For example, if your image is a reusable Python application builder, it
 will require application source code to be added in a particular
@@ -1019,50 +882,35 @@ with a boilerplate `Dockerfile` to copy-paste into their application, but
 that is inefficient, error-prone and difficult to update because it
 mixes with application-specific code.
 
-The solution is to use `ONBUILD` to register advance instructions to
-run later, during the next build stage.
+解决办法就是使用`ONBUILD`注册预备以后运行的指令，待下次构建场景。
 
-Here's how it works:
+以下是运行过程：
 
-1. When it encounters an `ONBUILD` instruction, the builder adds a
-   trigger to the metadata of the image being built. The instruction
-   does not otherwise affect the current build.
-2. At the end of the build, a list of all triggers is stored in the
-   image manifest, under the key `OnBuild`. They can be inspected with
-   the `docker inspect` command.
-3. Later the image may be used as a base for a new build, using the
-   `FROM` instruction. As part of processing the `FROM` instruction,
-   the downstream builder looks for `ONBUILD` triggers, and executes
-   them in the same order they were registered. If any of the triggers
-   fail, the `FROM` instruction is aborted which in turn causes the
-   build to fail. If all triggers succeed, the `FROM` instruction
-   completes and the build continues as usual.
-4. Triggers are cleared from the final image after being executed. In
-   other words they are not inherited by "grand-children" builds.
+1. 碰到 `ONBUILD` 指令时，构建器会添加一个触发器到构建镜像的元数据中。指令不会影响当前构建。
+2. 构建结束，所有触发器列表会存储于镜像清单（manifest）中，在键名`OnBuild`下。他们可以用`docker inspect`命令检查到。
+3. 以后，该镜像可能通过`FROM`指令被用于新构建的基础镜像。在进行 `FROM` 指令处理时，下游构建器先寻找`ONBUILD`触发器，以它们注册时的顺序执行它们。如果有任何触发器运行失败，`FROM`指令终止执行引起构建失败。如果所有触发器都运行成功，`FROM`指令会完成，构建则继续。
+4. 在最终镜像执行后，触发器会清除。也就是说，他们不会被隔代构建"grand-children"所继承。
 
-For example you might add something like this:
+示例，给构建加些东西：
 
     [...]
     ONBUILD ADD . /app/src
     ONBUILD RUN /usr/local/bin/python-build --dir /app/src
     [...]
 
-> **Warning**: Chaining `ONBUILD` instructions using `ONBUILD ONBUILD` isn't allowed.
+> **警告**： 禁止使用 `ONBUILD ONBUILD`这样的链式`ONBUILD`指令。
 
-> **Warning**: The `ONBUILD` instruction may not trigger `FROM` or `MAINTAINER` instructions.
+> **警告**： `ONBUILD`指令不能触发`FROM`或`MAINTAINER`指令。
 
 ## STOPSIGNAL
 
 	STOPSIGNAL signal
 
-The `STOPSIGNAL` instruction sets the system call signal that will be sent to the container to exit.
-This signal can be a valid unsigned number that matches a position in the kernel's syscall table, for instance 9,
-or a signal name in the format SIGNAME, for instance SIGKILL.
+`STOPSIGNAL`指令设置系统呼叫信号，它会发给容器退出。该信号是合法的 unsigned 数值，与内核中syscall表中位置对应，例如信号值 9，或者在SIGNAME格式中的信号名，如 SIGKILL。
 
-## Dockerfile examples
+## Dockerfile实例
 
-Below you can see some examples of Dockerfile syntax. If you're interested in
-something more realistic, take a look at the list of [Dockerization examples](https://github.com/docker/docker/blob/master/docs/examples/index.md).
+下面看看 Dockerfile 语法的实例。如果对更实际的例子感兴趣，可以看看这个列表 [Dockerization examples](https://github.com/docker/docker/blob/master/docs/examples/index.md).
 
 ```
 # Nginx
