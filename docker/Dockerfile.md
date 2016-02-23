@@ -49,7 +49,7 @@ Dockerfile 文件放在该目录中。仅添加构建该 Dockerfile 文件所必
 注意，每条指令都是独立运行的，都会产生一个新镜像，所以`RUN cd /tmp`不会对下一条指令有任何影响。
 
 只要有可能，Docker就会重用中间镜像(cache)，这可以极大加速`docker build`进程。可通过控制台中的`Using cache`信息显示这一点。
-(详情参阅 [Build cache section](https://github.com/docker/docker/blob/master/docs/userguide/eng-image/dockerfile_best-practices.md#build-cache)) `Dockerfile`文件最佳实践指南：
+(详情参阅 [Build cache section](dockerfile_best-practices.md#build-cache)) `Dockerfile`文件最佳实践指南：
 
     $ docker build -t svendowideit/ambassador .
     Sending build context to Docker daemon 15.36 kB
@@ -262,7 +262,7 @@ RUN /bin/bash -c 'source $HOME/.bashrc ; echo $HOME'
 `RUN`指令的缓存在下次构建期间不会自动失效。比如象 `RUN apt-get dist-upgrade -y` 这样指令的缓存会在下次构建时重用。使用`--no-cache` 标志参数，`RUN`指令的缓存会失效，如：`docker build --no-cache`。
 
 详情参阅 [`Dockerfile`最佳实践指南
-guide](https://github.com/docker/docker/blob/master/docs/userguide/eng-image/dockerfile_best-practices.md#build-cache)。
+guide](dockerfile_best-practices.md#build-cache)。
 
 `ADD` 指令操作的 `RUN`指令的缓存也会失效。详情查看[下面](#add)。
 
@@ -424,7 +424,7 @@ feature](https://github.com/docker/docker/blob/master/docs/userguide/networking/
 > 如果 URL 文件使用了认证保护，那就需要使用 `RUN wget`、`RUN curl` 或其他容器中包含的工具来完成 `ADD` 指令不支持的认证操作。
 
 > **注意**：
-> 如果`<src>`的内容变化，第一次遇到`ADD`指令会使Dockerfile文件中后续所有指令缓存失效。这包括 `RUN` 指令的缓存失效。详情参阅 [`Dockerfile`最佳实践指南](https://github.com/docker/docker/blob/master/docs/userguide/eng-image/dockerfile_best-practices.md#build-cache) for more information.
+> 如果`<src>`的内容变化，第一次遇到`ADD`指令会使Dockerfile文件中后续所有指令缓存失效。这包括 `RUN` 指令的缓存失效。详情参阅 [`Dockerfile`最佳实践指南](dockerfile_best-practices.md#build-cache) for more information.
 
 
 `ADD` 遵从以下规则：

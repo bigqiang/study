@@ -1,4 +1,4 @@
-# Best practices for writing Dockerfiles
+# 书写 Dockerfiles 最佳实践
 
 Docker can build images automatically by reading the instructions from a
 `Dockerfile`, a text file that contains all the commands, in order, needed to
