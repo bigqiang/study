@@ -22,4 +22,4 @@
   5. Memcache
 
 ## 实际
-  1. `docker pull ubuntu:trusty`
+  1. `docker pull million12/nginx-php:php56`
