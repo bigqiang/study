@@ -695,7 +695,7 @@ sys	0m 0.03s
     VOLUME ["/data"]
 
 `VOLUME`指令创建了一个指定名称的挂载点，标记它为来自本地主机或其他容器的外部挂载卷。它的值可以是JSON数组（`VOLUME ["/var/log/"]`），或是带多个参数的纯字符串（`VOLUME /var/log` 或 `VOLUME /var/log
-/var/db`）。更多信息、示例和挂载指令参考 [*用卷共享目录*](https://github.com/docker/docker/blob/master/docs/userguide/containers/dockervolumes.md#mount-a-host-directory-as-a-data-volume)
+/var/db`）。更多信息、示例和挂载指令参考 [*用卷共享目录*](dockervolumes.md#挂载一个主机目录作数据卷)
 
 `docker run`命令会用基础镜像中指定位置已经存在的数据对新创建的卷进行初始化。例如下面的 Dockerfile 片断：
 
