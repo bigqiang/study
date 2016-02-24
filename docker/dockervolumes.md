@@ -20,7 +20,7 @@ containers that bypasses the [*Union File System*](../../reference/glossary.md#u
 - Volumes are initialized when a container is created. If the container's
   base image contains data at the specified mount point, that existing data is
   copied into the new volume upon volume initialization. (Note that this does
-  not apply when [mounting a host directory](#mount-a-host-directory-as-a-data-volume).)
+  not apply when [mounting a host directory](#挂载一个主机目录作数据卷).)
 - Data volumes can be shared and reused among containers.
 - Changes to a data volume are made directly.
 - Changes to a data volume will not be included when you update an image.

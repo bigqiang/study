@@ -12,6 +12,9 @@
 
 
 ## [Dockerfile 文件格式说明](Dockerfile.md)
+
+## [容器中数据的管理](dockervolumes.md)
+
 ## PHP开发者搭建Docker开发环境
  1. [如何制作一个定制的 PHP 基础 Docker 镜像](php-docker01.md)
  2. [如何开发一个 PHP 的 Docker 化应用](php-docker02.md)
