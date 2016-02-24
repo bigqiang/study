@@ -173,3 +173,55 @@ docker rm $sample_job
 
 非常重要的一点是，你必须要知道存储库不是根存储库，它应该使用此格式(user)/(repo_name)。
 
+Docker提供了一个非常强大的命令diff，它可以列出容器内发生变化的文件和目录。这些变化包括添加（A-add）、删除（D-delete）、修改（C-change）。该命令便于Debug，并支持快速的共享环境。
+语法是：`docker diff container`
+
+`docker events`： 打印指定时间内的容器的实时系统事件。
+
+`docker import` ：Docker可以导入远程文件、本地文件和目录。使用HTTP的URL从远程位置导入，而本地文件或目录的导入需要使用-参数。从远程位置导入的语法是：`docker import http://example.com/example.tar`
+
+`docker export`: 类似于`import`，`export`命令用于将容器的系统文件打包成tar文件。
+
+cp： 这个命令是从容器内复制文件到指定的路径上。语法如下：`docker cp container:path hostpath`
+
+login： 此命令用来登录到Docker registry服务器，语法如下：`docker login [options] [server]`
+如要登录自己主机的registry请使用：
+`docker login localhost:8080`
+
+
+inspect： Docker inspect命令可以收集有关容器和镜像的底层信息。这些信息包括：
+* 容器实例的IP地址
+* 端口绑定列表
+* 特定端口映射的搜索
+* 收集配置的详细信息
+
+该命令的语法是：`docker inspect container/image`
+```
+docker inspectroot@tankywoo-docker:~# docker inspect 49bfc7a9817f
+ ...
+ "Env": [
+     "name=tanky",
+     "HOME=/",
+     "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ ],
+ ...
+```
+
+可以通过在`docker run`设置或修改环境变量:`docker run -i -t --env name="tanky" ubuntu:newtest /bin/bash`
+
+kill：发送SIGKILL信号来停止容器的主进程。语法是：`docker kill [options] container`
+
+rmi：
+该命令可以移除一个或者多个镜像，语法如下：
+`docker rmi image`
+镜像可以有多个标签链接到它。在删除镜像时，你应该确保删除所有相关的标签以避免错误。
+
+wait：
+阻塞对指定容器的其它调用方法，直到容器停止后退出阻塞。
+
+load：
+该命令从tar文件中载入镜像或仓库到STDIN。
+
+save：
+类似于load，该命令保存镜像为tar文件并发送到STDOUT。语法如下：
+`docker save image`

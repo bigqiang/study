@@ -231,7 +231,11 @@ CLI 会把`.dockerignore`文件解析成一个独立行的模式列表，模式�
 - `RUN <command>` (*shell* 形式，command 运行在一个 shell 中 - `/bin/sh -c`)
 - `RUN ["executable", "param1", "param2"]` (*exec* 形式)
 
-该指令执行当前镜像顶部新层中的任意命令并提交（commit）结果。提交结果的镜像会用于`Dockerfile`文件中下一步指令。
+该指令执行当前镜像顶部新层中的任意命令并提交（commit）结果。提交结果的镜像会用于`Dockerfile`文件中下一步指令。它等效于如下形式：
+```
+docker run <image> <command>
+docker commit <container_id>
+```
 
 `RUN`指令分层和生成提交符合 Docker 的核心概念：提交方便，可从镜像历史任一点创建容器，非常类似源码版本控制。
 
@@ -388,6 +392,8 @@ feature](https://github.com/docker/docker/blob/master/docs/userguide/networking/
 
 当容器运行一个生成结果的镜像时，使用`ENV`设置的环境变量依然会存在。可以通过 `docker inspect`查看它的值，也可以使用`docker run --env <key>=<value>` 去修改它们。
 
+假如你安装了JAVA程序，需要设置JAVA_HOME，那么可以在Dockerfile中这样写：`ENV JAVA_HOME /path/to/java/dirent`
+
 > **注意**：
 > 环境持久性会导致不可预料的副效应。例如，设置 `ENV DEBIAN_FRONTEND noninteractive` 可能使基于Debian镜像的apt-get
 用户迷惑。要为一条命令只设置一个值，可以使用 `RUN <key>=<value> <command>`。
@@ -508,7 +514,7 @@ ENTRYPOINT 有两种形式：
 - `ENTRYPOINT ["executable", "param1", "param2"]`    (*exec*形式，首选)
 - `ENTRYPOINT command param1 param2`    (*shell*形式)
 
-`ENTRYPOINT`可以配置将运行的容器。
+`ENTRYPOINT`可以配置将运行的容器，指定容器启动时执行的命令。
 
 例如，下面的操作会让 nginx 随它的默认内容启动，并且侦听 80 端口：
 
@@ -694,7 +700,7 @@ sys	0m 0.03s
 
     VOLUME ["/data"]
 
-`VOLUME`指令创建了一个指定名称的挂载点，标记它为来自本地主机或其他容器的外部挂载卷。它的值可以是JSON数组（`VOLUME ["/var/log/"]`），或是带多个参数的纯字符串（`VOLUME /var/log` 或 `VOLUME /var/log
+`VOLUME`指令创建了一个指定名称的挂载点，标记它为来自本地主机或其他容器的外部挂载卷。用于授权访问从容器内到主机上的目录。它的值可以是JSON数组（`VOLUME ["/var/log/"]`），或是带多个参数的纯字符串（`VOLUME /var/log` 或 `VOLUME /var/log
 /var/db`）。更多信息、示例和挂载指令参考 [*用卷共享目录*](dockervolumes.md#挂载一个主机目录作数据卷)
 
 `docker run`命令会用基础镜像中指定位置已经存在的数据对新创建的卷进行初始化。例如下面的 Dockerfile 片断：
@@ -706,6 +712,16 @@ sys	0m 0.03s
 
 这个 Dockerfile 文件产生了一个镜像，它在新创建了一个`/myvol`挂载点，并且把 `greeting` 文件复制进新创建的卷中。
 
+```
+FROM base
+VOLUME ["/tmp/data"]
+```
+运行通过该Dockerfile生成image的容器，/tmp/data目录中的数据在容器关闭后，里面的数据还存在。例如另一个容器也有持久化数据的需求，且想使用上面容器共享的 /tmp/data 目录，那么可以运行下面的命令启动一个容器：
+```
+docker run -t -i -rm -volumes-from container1 image2 bash
+```
+container1为第一个容器的ID，image2为第二个容器运行image的名字。
+
 > **注意**：
 > 如果卷已经被声明，则该卷内任何构建操作所带来的数据变化都会被丢弃。
 
@@ -716,7 +732,16 @@ sys	0m 0.03s
 
     USER daemon
 
-`USER` 指令用于设定运行镜像时要使用的用户名或 UID，它也用于`Dockerfile`文件中任何 `RUN`、`CMD`以及`ENTRYPOINT`指令。
+`USER` 指令用于设定运行镜像时要使用的用户名或 UID，它也用于`Dockerfile`文件中任何 `RUN`、`CMD`以及`ENTRYPOINT`指令。比如指定 memcached 的运行用户，可以使用 `ENTRYPOINT` 来实现:
+```
+ENTRYPOINT ["memcached", "-u", "daemon"]
+```
+
+更好的方式是：
+```
+ENTRYPOINT ["memcached"]
+USER daemon
+```
 
 ## WORKDIR
 
