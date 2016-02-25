@@ -1,59 +1,52 @@
+<!--[metadata]>
++++
+aliases = ["/engine/userguide/dockervolumes/"]
+title = "Manage data in containers"
+description = "How to manage data inside your Docker containers."
+keywords = ["Examples, Usage, volume, docker, documentation, user guide, data,  volumes"]
+[menu.main]
+parent = "engine_learn"
++++
+<![end-metadata]-->
 # 容器中数据的管理
 
-So far we've been introduced to some [basic Docker concepts](../containers/usingdocker.md),
-seen how to work with [Docker images](../containers/dockerimages.md) as well as learned about
-[networking and links between containers](../networking/default_network/dockerlinks.md). In this section we're
-going to discuss how you can manage data inside and between your Docker
-containers.
+[Docker的基础概念](https://github.com/docker/docker/blob/master/docs/userguide/containers/usingdocker.md)已有介绍，也了解了如何操作 [Docker 镜像](https://github.com/docker/docker/blob/master/docs/userguide/containers/dockerimages.md) 以及 [容器间的网络与连接](https://github.com/docker/docker/blob/master/docs/userguide/networking/default_network/dockerlinks.md)。本部分讨论Docker容器间数据的管理。
 
-We're going to look at the two primary ways you can manage data in
-Docker.
+Docker 主要有两种管理数据的方式：
 
-* Data volumes, and
-* Data volume containers.
+* 数据卷
+* 数据卷容器
 
-## Data volumes
+## 数据卷
 
-A *data volume* is a specially-designated directory within one or more
-containers that bypasses the [*Union File System*](../../reference/glossary.md#union-file-system). Data volumes provide several useful features for persistent or shared data:
+*数据卷*是一个或多个容器内经特殊设计的目录，它绕过了 [*Union File System*](https://github.com/docker/docker/blob/master/docs/reference/glossary.md#union-file-system)。数据卷为持久化或共享数据提供了几种有用的功能：
 
-- Volumes are initialized when a container is created. If the container's
-  base image contains data at the specified mount point, that existing data is
-  copied into the new volume upon volume initialization. (Note that this does
-  not apply when [mounting a host directory](#挂载一个主机目录作数据卷).)
-- Data volumes can be shared and reused among containers.
-- Changes to a data volume are made directly.
-- Changes to a data volume will not be included when you update an image.
-- Data volumes persist even if the container itself is deleted.
+- 卷在容器创建时才初始化。如果容器基础镜像(base image)在指定挂载点已经包含数据，则已有数据会在新卷初始化时复制到卷中。(注意，当 [挂载一个主机目录作数据卷](#挂载一个主机目录作数据卷)时，这不适用。)
+- 数据卷可在多个容器间共享和复用。
+- 数据卷的修改会直接生效。
+- 镜像升级不会影响数据卷的变化。
+- 数据卷是持久化的，甚至容器自身被删除也如此。
 
-Data volumes are designed to persist data, independent of the container's life
-cycle. Docker therefore *never* automatically deletes volumes when you remove
-a container, nor will it "garbage collect" volumes that are no longer
-referenced by a container.
+设计数据卷就是为了持久化数据，独立在容器生命周期之外的。因此删除容器时，Docker *重不* 自动删除卷，对没有容器引用的卷也不会进行“垃圾回收”。
 
-### Adding a data volume
+### 数据卷的添加
 
-You can add a data volume to a container using the `-v` flag with the
-`docker create` and `docker run` command. You can use the `-v` multiple times
-to mount multiple data volumes. Let's mount a single volume now in our web
-application container.
+`docker create` and `docker run` 命令使用`-v`参数就可以给容器新增一个卷。使用多个 `-v` 就可挂载多个数据卷。现在试着挂载一个卷到Webapp容器里。
 
     $ docker run -d -P --name web -v /webapp training/webapp python app.py
 
-This will create a new volume inside a container at `/webapp`.
+容器内会生成一个新卷 `/webapp`。
 
-> **Note:**
-> You can also use the `VOLUME` instruction in a `Dockerfile` to add one or
-> more new volumes to any container created from that image.
+> **注意**：
+> 给镜像创建的任何容器也可以用`Dockerfile`文件里的`VOLUME`指令去新增一个或多个新卷。
 
 ### Locating a volume
 
-You can locate the volume on the host by utilizing the `docker inspect` command.
+可以用`docker inspect`命令查找主机上卷位置。
 
     $ docker inspect web
 
-The output will provide details on the container configurations including the
-volumes. The output should look something similar to the following:
+这会输出包括卷信息在内的容器配置的很多细节。输出结果类似下面这个样子：
 
     ...
     Mounts": [
@@ -69,207 +62,118 @@ volumes. The output should look something similar to the following:
     ]
     ...
 
-You will notice in the above `Source` is specifying the location on the host and
-`Destination` is specifying the volume location inside the container. `RW` shows
-if the volume is read/write.
+注意，上面信息中，`Source`指明了主机位置，`Destination`指明了容器内部的卷位置。`RW`则表明该卷的可读写状态。
 
 ### 挂载一个主机目录作数据卷
 
-In addition to creating a volume using the `-v` flag you can also mount a
-directory from your Docker daemon's host into a container.
+除使用`-v`创建新卷外，也可以从 Docker daemon 的主机挂载一个目录给容器。
 
 ```
 $ docker run -d -P --name web -v /src/webapp:/opt/webapp training/webapp python app.py
 ```
 
-This command mounts the host directory, `/src/webapp`, into the container at
-`/opt/webapp`.  If the path `/opt/webapp` already exists inside the container's
-image, the `/src/webapp` mount overlays but does not remove the pre-existing
-content. Once the mount is removed, the content is accessible again. This is
-consistent with the expected behavior of the `mount` command.
+该命令挂载了主机目录 `/src/webapp` 到容器的 `/opt/webapp` 上。如果路径 `/opt/webapp` 已经存在于容器的镜像中，则 `/src/webapp` 挂载内容会覆盖但不会移除已有内容。一旦挂载移除，原有内容可再次访问到。写 `mount` 命令预期行为一致。
 
-The `container-dir` must always be an absolute path such as `/src/docs`.
-The `host-dir` can either be an absolute path or a `name` value. If you
-supply an absolute path for the `host-dir`, Docker bind-mounts to the path
-you specify. If you supply a `name`, Docker creates a named volume by that `name`.
+`container-dir`一定是象 `/src/docs` 这样的绝对路径。`host-dir`可以是绝对路径或是一个`name`值。如果给出`host-dir`的是绝对路径，那么Docker 会绑定挂载到指定路径上去；如果给出的是一个`name`，Docker会根据这个`name`创建一个命名卷。
 
-A `name` value must start with an alphanumeric character,
-followed by `a-z0-9`, `_` (underscore), `.` (period) or `-` (hyphen).
-An absolute path starts with a `/` (forward slash).
+`name`值必须以英文字母开头，后面可跟`a-z0-9`、`_` (下划线)、 `.` (句点) 或 `-` (连字符)。绝对路径要以 `/` 开头（正斜杠）。
 
-For example, you can specify either `/foo` or `foo` for a `host-dir` value.
-If you supply the `/foo` value, Docker creates a bind-mount. If you supply
-the `foo` specification, Docker creates a named volume.
+比如，分别给`host-dir`一个 `/foo` 和 `foo`。前者Docker会按其路径创建，后者会创建一个命名卷。
 
-If you are using Docker Machine on Mac or Windows, your Docker daemon has only limited access to your OS X or Windows filesystem. Docker Machine tries
-to auto-share your `/Users` (OS X) or `C:\Users` (Windows) directory.  So,
-you can mount files or directories on OS X using.
+如果在 Mac 和 Windows 上使用Docker机器，Docker daemon 限制了对 OS X 或 Windows 文件系统的访问。Docker Machine 会尽力自动共享 `/Users` (OS X) 或 `C:\Users` (Windows) 目录。所以使用 OS X 可以这样挂载文件或目录：
 
 ```
 docker run -v /Users/<path>:/<container path> ...
 ```
 
-On Windows, mount directories using:
+使用 Windows，可以这样挂载目录：
 
 ```
 docker run -v /c/Users/<path>:/<container path> ...`
 ```
 
-All other paths come from your virtual machine's filesystem, so if you want
-to make some other host folder available for sharing, you need to do
-additional work. In the case of VirtualBox you need to make the host folder
-available as a shared folder in VirtualBox. Then, you can mount it using the
-Docker `-v` flag.
+所有其他路径都来自于虚拟机的文件系统，如果想让其他主机文件可以共享，需要做些额外的工作。 对于 VirtualBox，如果想让主机中文件夹被 VirtualBox所共享，那么可以使用 Docker 的 `-v` 参数。
 
-Mounting a host directory can be useful for testing. For example, you can mount
-source code inside a container. Then, change the source code and see its effect
-on the application in real time. The directory on the host must be specified as
-an absolute path and if the directory doesn't exist Docker will automatically
-create it for you.  This auto-creation of the host path has been [*deprecated*](#auto-creating-missing-host-paths-for-bind-mounts).
+挂载主机目录用于测试很管用。比如，挂载源代码到一个容器内，修改源码会在应用中实时看到结果。主机目录必须以绝对路径指明，如果该目录不存在，Docker会自动为你创建。主机路径的自动创建已被[*弃用*](https://github.com/docker/docker/blob/master/docs/deprecated.md#auto-creating-missing-host-paths-for-bind-mounts).
 
-Docker volumes default to mount in read-write mode, but you can also set it to
-be mounted read-only.
+Docker 卷挂载的默认设置是可读写模式，也可以设置成挂载只读。
 
 ```
 $ docker run -d -P --name web -v /src/webapp:/opt/webapp:ro training/webapp python app.py
 ```
 
-Here we've mounted the same `/src/webapp` directory but we've added the `ro`
-option to specify that the mount should be read-only.
+这里，同样是挂载 `/src/webapp` 目录，添是多了 `ro` 选项以指明此挂载是只读的。
 
-Because of [limitations in the `mount`
-function](http://lists.linuxfoundation.org/pipermail/containers/2015-April/035788.html),
-moving subdirectories within the host's source directory can give
-access from the container to the host's file system. This requires a malicious
-user with access to host and its mounted directory.
+由于 [`mount`功能的局限](http://lists.linuxfoundation.org/pipermail/containers/2015-April/035788.html)，主机源目录中的子目录的移动会影响容器对主机文件系统的访问。对于一个恶意用户只要能对主机及挂载目录有访问权即可。
 
->**Note**: The host directory is, by its nature, host-dependent. For this
->reason, you can't mount a host directory from `Dockerfile` because built images
->should be portable. A host directory wouldn't be available on all potential
->hosts.
+>**注意**：本质上，主机目录是依赖主机而存在的。因此，不要在`Dockerfile`中挂载主机目录，原因是构建的镜像应该是便于移植的。主机目录对所有潜在的主机都未必可用。
 
-### Volume labels
+### 卷标
 
-Labeling systems like SELinux require that proper labels are placed on volume
-content mounted into a container. Without a label, the security system might
-prevent the processes running inside the container from using the content. By
-default, Docker does not change the labels set by the OS.
+与SELinux类似，卷标系统（Labeling systems）要求挂载到容器中的卷内容有正确的标签。没有标签，安全机制可能阻止容器内运行的进程使用卷内容。默认情况下，Docker不改变 OS 设置的卷标。
 
-To change a label in the container context, you can add either of two suffixes
-`:z` or `:Z` to the volume mount. These suffixes tell Docker to relabel file
-objects on the shared volumes. The `z` option tells Docker that two containers
-share the volume content. As a result, Docker labels the content with a shared
-content label. Shared volume labels allow all containers to read/write content.
-The `Z` option tells Docker to label the content with a private unshared label.
-Only the current container can use a private volume.
+要修改容器上下文环境的卷标，就要在挂载卷中添加后缀`:z` 或 `:Z`。后缀的意思是告诉 Docker 要对共享卷上的文件对象重新打标。`z` 选项告诉 Docker 有两个容器在共享卷上下文环境。 结果，Docker 用共享内容标签给该内容打标签。共享的卷标允许所有容器读写内容。 `Z`选项告诉 Docker 以私有非共享的标签打标内容。
 
-### Mount a host file as a data volume
+### 主机文件挂载成数据卷
 
-The `-v` flag can also be used to mount a single file  - instead of *just*
-directories - from the host machine.
+`-v` 参数也可用于挂载单个主机文件，不仅仅是目录。
 
     $ docker run --rm -it -v ~/.bash_history:/root/.bash_history ubuntu /bin/bash
 
-This will drop you into a bash shell in a new container, you will have your bash
-history from the host and when you exit the container, the host will have the
-history of the commands typed while in the container.
+这会进入新容器的bash shell，却可以拥有主机的 bash 历史记录；退出容器后，主机上也拥有了容器中键入的命令历史。
 
-> **Note:**
-> Many tools used to edit files including `vi` and `sed --in-place` may result
-> in an inode change. Since Docker v1.1.0, this will produce an error such as
-> "*sed: cannot rename ./sedKdJ9Dy: Device or resource busy*". In the case where
-> you want to edit the mounted file, it is often easiest to instead mount the
-> parent directory.
+> **注意**：
+> 包括`vi`和`sed --in-place`在内的很多工具经常修改文件，这可能导致 inode 变动。Docker v1.1.0 版本以后，这种情况会产生一个错误信息，象这样的 "*sed: cannot rename ./sedKdJ9Dy: Device or resource busy*"。如果想修改挂载文件，最简单的办法就是挂载它的父目录。
 
-## Creating and mounting a data volume container
+## 数据卷容器的创建和挂载
 
-If you have some persistent data that you want to share between
-containers, or want to use from non-persistent containers, it's best to
-create a named Data Volume Container, and then to mount the data from
-it.
+如果想在两个容器间共享一些持久化的数据，或者想从多个非持久化的容器中使用持久化数据，最好的办法就是创建一个命名的数据卷容器，然后从中挂载它的数据。
 
-Let's create a new named container with a volume to share.
-While this container doesn't run an application, it reuses the `training/postgres`
-image so that all containers are using layers in common, saving disk space.
+我们来创建带一个共享卷的新命名容器。该容器不运行应用，它复用 `training/postgres` 镜像，所有镜像都使用共同的层，以节省空间。
 
     $ docker create -v /dbdata --name dbstore training/postgres /bin/true
 
-You can then use the `--volumes-from` flag to mount the `/dbdata` volume in another container.
+可以使用 `--volumes-from` 参数挂载 `/dbdata` 卷到其他容器。
 
     $ docker run -d --volumes-from dbstore --name db1 training/postgres
 
-And another:
+再添加一个：
 
     $ docker run -d --volumes-from dbstore --name db2 training/postgres
 
-In this case, if the `postgres` image contained a directory called `/dbdata`
-then mounting the volumes from the `dbstore` container hides the
-`/dbdata` files from the `postgres` image. The result is only the files
-from the `dbstore` container are visible.
+本例中，如果 `postgres` 镜像包含了一个称作 `/dbdata` 的目录，那么挂载 `dbstore` 容器的卷时，会隐藏所有`postgres`镜像中 `/dbdata` 内文件。仅 `dbstore` 容器中文件可见。
 
-You can use multiple `--volumes-from` parameters to combine data volumes from
-several containers. To find detailed information about `--volumes-from` see the
-[Mount volumes from container](../../reference/commandline/run.md#mount-volumes-from-container-volumes-from)
-in the `run` command reference.
+也可以多次使用 `--volumes-from` 参数以结合几个容器的数据卷。关于`--volumes-from`详情可参阅 [Mount volumes from container](https://github.com/docker/docker/blob/docs/docs/reference/commandline/run.md#mount-volumes-from-container-volumes-from) 中`run` 命令参考。
 
 You can also extend the chain by mounting the volume that came from the
 `dbstore` container in yet another container via the `db1` or `db2` containers.
 
     $ docker run -d --name db3 --volumes-from db1 training/postgres
 
-If you remove containers that mount volumes, including the initial `dbstore`
-container, or the subsequent containers `db1` and `db2`, the volumes will not
-be deleted.  To delete the volume from disk, you must explicitly call
-`docker rm -v` against the last container with a reference to the volume. This
-allows you to upgrade, or effectively migrate data volumes between containers.
+如果移除挂载卷的容器，包括最初的 `dbstore` 容器在内，或是后面的 `db1` 和 `db2` 容器，该卷不会删除。删除硬盘上的卷必须显式地对引该卷的最近一次的容器调用 `docker rm -v`。可以升级，或者在两个容器间进行数据卷迁移。
 
-> **Note:** Docker will not warn you when removing a container *without*
-> providing the `-v` option to delete its volumes. If you remove containers
-> without using the `-v` option, you may end up with "dangling" volumes;
-> volumes that are no longer referenced by a container.
-> You can use `docker volume ls -f dangling=true` to find dangling volumes,
-> and use `docker volume rm <volume name>` to remove a volume that's
-> no longer needed.
+> **注意**： 当移除一个容器而没有`-v`选项参数进行卷删除时，Docker不会进行提醒。不使用`-v`参数进行容器移除操作，会产生“无依靠”的卷；这种卷没有容器引用它。使用 `docker volume ls -f dangling=true` 可以查看这种无依靠的卷。使用`docker volume rm <volume name>` 可以移除不再需要的卷。
 
-## Backup, restore, or migrate data volumes
+## 数据卷的备份、恢复或迁移
 
-Another useful function we can perform with volumes is use them for
-backups, restores or migrations.  We do this by using the
-`--volumes-from` flag to create a new container that mounts that volume,
-like so:
+使用卷进行备份、恢复或迁移非常有用。先用 `--volumes-from` 参数创建一个挂载卷的新容器，如下：
 
     $ docker run --rm --volumes-from dbstore -v $(pwd):/backup ubuntu tar cvf /backup/backup.tar /dbdata
 
-Here we've launched a new container and mounted the volume from the
-`dbstore` container. We've then mounted a local host directory as
-`/backup`. Finally, we've passed a command that uses `tar` to backup the
-contents of the `dbdata` volume to a `backup.tar` file inside our
-`/backup` directory. When the command completes and the container stops
-we'll be left with a backup of our `dbdata` volume.
+该操作启动一个新容器，并且挂载了`dbstore`容器的卷。接下来挂载一个本地方机目录 `/backup`。最后，传递一个使用 `tar` 备份 `dbdata` 卷内容到`/backup`目录内 `backup.tar`文件中的命令。命令完成，容器终止，我们得到一个 `dbdata` 卷的备份。
 
-You could then restore it to the same container, or another that you've made
-elsewhere. Create a new container.
+然后在同一容器恢复它，或者在其它容器中恢复。创建一个新容器：
 
     $ docker run -v /dbdata --name dbstore2 ubuntu /bin/bash
 
-Then un-tar the backup file in the new container's data volume.
+然后在新容器的数据卷中 un-tar 这个备份文件：
 
     $ docker run --rm --volumes-from dbstore2 -v $(pwd):/backup ubuntu bash -c "cd /dbdata && tar xvf /backup/backup.tar --strip 1"
 
-You can use the techniques above to automate backup, migration and
-restore testing using your preferred tools.
+可以使用自己喜欢的工具，利用上面的技术自动化地进行备份、迁移和恢复的工作
 
-## Important tips on using shared volumes
+## 使用共享卷的重要提示
 
-Multiple containers can also share one or more data volumes. However, multiple containers writing to a single shared volume can cause data corruption. Make sure your applications are designed to write to shared data stores.
+多个容器可以共享一个或多个数据卷。不过，多个容器向单个共享卷进行写操作的话，会导致数据损坏。要保证应用的设计是对共享的数据存储进行写操作。
 
-Data volumes are directly accessible from the Docker host. This means you can read and write to them with normal Linux tools. In most cases you should not do this as it can cause data corruption if your containers and applications are unaware of your direct access.
-
-# Next steps
-
-Now we've learned a bit more about how to use Docker we're going to see how to
-combine Docker with the services available on
-[Docker Hub](https://hub.docker.com) including Automated Builds and private
-repositories.
-
-Go to [Working with Docker Hub](../containers/dockerrepos.md).
+Docker 主机可以直接访问数据卷。也就是说，可以使用常规的Linux工具对他们进行读写操作。通常不要这样操作，如果容器不知道有人直接访问的话，就可能导致数据损坏。
