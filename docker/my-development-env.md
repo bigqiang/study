@@ -23,6 +23,12 @@
 
 ## 实际操作
 ### 1. `docker pull mysql:5.6`
+  主机目录数据位置：/e/MySQLData/
+  运行命令：
+  ```
+  docker run --name mysql-dev -v /e/MySQLData/:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=my-secret-pw -d mysql:5.6
+  ```
+  说明：`mysql-dev` 给容器指定的名称
 
 #### 启动一个 MySQL 实例:
 
