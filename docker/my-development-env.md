@@ -39,76 +39,84 @@ $ docker run --name some-app --link some-mysql:mysql -d application-that-uses-my
 ```
 
 #### MySQL命令行客户端链接到 MySQL
-The following command starts another mysql container instance and runs the mysql command line client against your original mysql container, allowing you to execute SQL statements against your database instance:
-
+用以下命令启动另一个mysql容器实例，然后针对原来的mysql容器运行命令行客户端，可以对数据库实例执行SQL语句：
+```
 $ docker run -it --link some-mysql:mysql --rm mysql sh -c 'exec mysql -h"$MYSQL_PORT_3306_TCP_ADDR" -P"$MYSQL_PORT_3306_TCP_PORT" -uroot -p"$MYSQL_ENV_MYSQL_ROOT_PASSWORD"'
-... where some-mysql is the name of your original mysql container.
+```
+`some-mysql`是原来mysql容器的名称。
 
-More information about the MySQL command line client can be found in the MySQL documentation
+MySQL 命令行客户端详细内容请查看[MySQL documentation](http://dev.mysql.com/doc/en/mysql.html)
 
-#### Container shell access and viewing MySQL logs
-The docker exec command allows you to run commands inside a Docker container. The following command line will give you a bash shell inside your mysql container:
-
+#### 容器 shell 访问和查看 MySQL 日志
+`docker exec`命令可以运行 Docker 容器内的命令。下面命令行显示的是 mysql 容器内的 bash shell：
+```
 $ docker exec -it some-mysql bash
-The MySQL Server log is available through Docker's container log:
-
+```
+通过 Docker 容器查看 MySQL Server 日志：
+```
 $ docker logs some-mysql
+```
 
-#### Using a custom MySQL configuration file
-The MySQL startup configuration is specified in the file /etc/mysql/my.cnf, and that file in turn includes any files found in the /etc/mysql/conf.d directory that end with .cnf. Settings in files in this directory will augment and/or override settings in /etc/mysql/my.cnf. If you want to use a customized MySQL configuration, you can create your alternative configuration file in a directory on the host machine and then mount that directory location as /etc/mysql/conf.d inside the mysql container.
+#### 自定义 MySQL 设置文件
+MySQL 的启动设置内容在文件 `/etc/mysql/my.cnf`中指定，并且，该文件中包含的任何文件都存在于 `/etc/mysql/conf.d` 目录，都以 `.cnf` 结尾。对该目录这些文件的设置会扩展和(或)覆盖 `/etc/mysql/my.cnf` 中的设置。要使用自定义的 MySQL 设置，就要在主机的一个目录中创建自己的配置文件，然后把这个目录位置挂载到 mysql 容器内的 `/etc/mysql/conf.d` 中。
 
-If /my/custom/config-file.cnf is the path and name of your custom configuration file, you can start your mysql container like this (note that only the directory path of the custom config file is used in this command):
-
+如果 `/my/custom/config-file.cnf` 是你自定义配置文件的路径名称，那就可以以下方式启动 mysql 容器(注意，自定义配置文件的目录路径仅在本命令中使用)：
+```
 $ docker run --name some-mysql -v /my/custom:/etc/mysql/conf.d -e MYSQL_ROOT_PASSWORD=my-secret-pw -d mysql:tag
-This will start a new container some-mysql where the MySQL instance uses the combined startup settings from /etc/mysql/my.cnf and /etc/mysql/conf.d/config-file.cnf, with settings from the latter taking precedence.
+```
+这会启动一个新容器`some-mysql`，这个MySQL实例会把 /etc/mysql/my.cnf 与 /etc/mysql/conf.d/config-file.cnf 的设置合并到一起，并且后者设置优先生效。
 
-Note that users on host systems with SELinux enabled may see issues with this. The current workaround is to assign the relevant SELinux policy type to your new config file so that the container will be allowed to mount it:
-
+注意，启用SELinux的主机系统可能会让挂载设置存在问题。当前解决办法是分派相应的 SELinux 策略类型给新配置文件，以便允许容器挂载它：
+```
 $ chcon -Rt svirt_sandbox_file_t /my/custom
+```
 
 #### 环境变量
-When you start the mysql image, you can adjust the configuration of the MySQL instance by passing one or more environment variables on the docker run command line. Do note that none of the variables below will have any effect if you start the container with a data directory that already contains a database: any pre-existing database will always be left untouched on container startup.
+启动这个 `mysql` 镜像时，需要`docker run`命令行传递一或多个环境变量给MySQL实例来调整它的配置。请注意，如果启动的容器已经带有一个包含数据库的目录，那么以下描述的所有环境变量都不会生效：任何预先存在的数据库都会被在容器启动时无损保留。
 
 **MYSQL_ROOT_PASSWORD**
-This variable is mandatory and specifies the password that will be set for the MySQL root superuser account. In the above example, it was set to my-secret-pw.
+该变量是强制性的，必选变量，可以指定 MySQL 的 root 超级用户账号密码。前面例子中，它被设置成`my-secret-pw`。
 
 **MYSQL_DATABASE**
-This variable is optional and allows you to specify the name of a database to be created on image startup. If a user/password was supplied (see below) then that user will be granted superuser access (corresponding to GRANT ALL) to this database.
+该变量可选，允许在镜像启动时指定数据库的名称。如果用名及密码已指定(见下文)，那么会许可该用户有访问该数据库的超级用户访问权([对应 `GRANT ALL`](http://dev.mysql.com/doc/en/adding-users.html))。
 
 **MYSQL_USER, MYSQL_PASSWORD**
-These variables are optional, used in conjunction to create a new user and to set that user's password. This user will be granted superuser permissions (see above) for the database specified by the MYSQL_DATABASE variable. Both variables are required for a user to be created.
+可选变量，用于创建新用户和设置用户密码。该用户会被授予`MYSQL_DATABASE`变量指定的数据库的超级用户访问权限（见上文）。用户创建时，两个变量都要使用。
 
-Do note that there is no need to use this mechanism to create the root superuser, that user gets created by default with the password specified by the MYSQL_ROOT_PASSWORD variable.
+注意，不要用此机制去创建 root 账号，该账号在 `MYSQL_ROOT_PASSWORD` 变量指定密码时已经默认创建。
 
 **MYSQL_ALLOW_EMPTY_PASSWORD**
-This is an optional variable. Set to yes to allow the container to be started with a blank password for the root user. NOTE: Setting this variable to yes is not recommended unless you really know what you are doing, since this will leave your MySQL instance completely unprotected, allowing anyone to gain complete superuser access.
+可选变量。设置`yes`，允许容器让root账号以空密码启动。注意，不建议设置值为`yes`，除非你明白该操作的意义，这会让 MySQL 实例全无防护，任何人都可以得到超级用户的所有访问权。
 
-#### Initializing a fresh instance
-When a container is started for the first time, a new database mysql will be initialized with the provided configuration variables. Furthermore, it will execute files with extensions .sh and .sql that are found in /docker-entrypoint-initdb.d. You can easily populate your mysql services by mounting a SQL dump into that directory and provide custom images with contributed data.
+#### 新实例的初始化
+容器初次启动时，新数据库会根据配置变量进行初始化。还会执行位于`/docker-entrypoint-initdb.d`当中扩展名为`.sh`、`.sql`的几个文件。 通过 [挂载一个 SQL dump 到该目录](dockervolumes.md#主机文件挂载成数据卷) 很容易填充 MySQL 服务，使用提供数据的自定义镜像也很容易。
 
 #### 注意事项
-##### Where to Store Data
-Important note: There are several ways to store data used by applications that run in Docker containers. We encourage users of the mysql images to familiarize themselves with the options available, including:
+##### 数据存储位置
+重要说明：Docker中运行的应用有多种方式存储使用的数据。我们鼓励`mysql`镜像用户熟悉这些方法的可用选选择，包括：
 
-Let Docker manage the storage of your database data by writing the database files to disk on the host system using its own internal volume management. This is the default and is easy and fairly transparent to the user. The downside is that the files may be hard to locate for tools and applications that run directly on the host system, i.e. outside containers.
-Create a data directory on the host system (outside the container) and mount this to a directory visible from inside the container. This places the database files in a known location on the host system, and makes it easy for tools and applications on the host system to access the files. The downside is that the user needs to make sure that the directory exists, and that e.g. directory permissions and other security mechanisms on the host system are set up correctly.
-The Docker documentation is a good starting point for understanding the different storage options and variations, and there are multiple blogs and forum postings that discuss and give advice in this area. We will simply show the basic procedure here for the latter option above:
+- 让 Docker 管理你的数据库数据的存储。可以这样实现，[让主机系统的磁盘使用自身内部的卷管理系统，把数据库的文件写到这些硬盘上](dockervolumes.md#数据卷的添加)。 这是默认方式，也简单，对用户也相当透明。缺点在于，对于直接运行于主机系统（即容器外部）中的工具和应用难于定位 这些文件。
+- 在主机系统（容器外部）创建数据目录，并且，[挂载它到一个对容器内部可见的目录上](dockervolumes.md#挂载一个主机目录作数据卷)。数据库文件存放于主机系统中已知位置，主机系统中的工具和应用易于访问。确点在于，用户必须确保目录存在， 而且主机系统上还要正确设置该目录的许可权限及其他安全机制。
 
-Create a data directory on a suitable volume on your host system, e.g. /my/own/datadir.
-Start your mysql container like this:
+理解不同存储方法的选择和变化从 Docker 文档开始是个好的开端，有多篇博客及论坛帖子针对这个问题进行了讨论并给出了建议。这里我们只对上面的后一种选择显示基本的操作：
 
+1. 在主机系统的适当卷上创建一个数据目录，如 `/my/own/datadir`。
+2. 以如下方式启动 `mysql` 容器：
+```
 $ docker run --name some-mysql -v /my/own/datadir:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=my-secret-pw -d mysql:tag
-The -v /my/own/datadir:/var/lib/mysql part of the command mounts the /my/own/datadir directory from the underlying host system as /var/lib/mysql inside the container, where MySQL by default will write its data files.
+```
+命令的 `-v /my/own/datadir:/var/lib/mysql` 部分表示，挂载主机系统的 `/my/own/datadir` 目录，作为容器内部的 `/var/lib/mysql`，这是 MySQL 默认会写数据文件的位置。
 
-Note that users on host systems with SELinux enabled may see issues with this. The current workaround is to assign the relevant SELinux policy type to the new data directory so that the container will be allowed to access it:
-
+注意，启用 SELinux 的主机系统可能会出问题。当前解决办法是分派相应的 SELinux 策略类型给新配置文件，以便允许容器挂载它：
+```
 $ chcon -Rt svirt_sandbox_file_t /my/own/datadir
+```
 
-##### No connections until MySQL init completes
-If there is no database initialized when the container starts, then a default database will be created. While this is the expected behavior, this means that it will not accept incoming connections until such initialization completes. This may cause issues when using automation tools, such as docker-compose, which start several containers simultaneously.
+##### MySQL 初始化完成才能连接
+在容器启动，数据库还没有初始化时，会创建一个默认数据库。 这是预料之中的情况，也就是说，初始化结束后才会接收连接。对于使用了诸如 docker-compose 这样自动化工具，同时启动多个容器时，就可能产生问题。
 
-##### Usage against an existing database
-If you start your mysql container instance with a data directory that already contains a database (specifically, a mysql subdirectory), the $MYSQL_ROOT_PASSWORD variable should be omitted from the run command line; it will in any case be ignored, and the pre-existing database will not be changed in any way.
+##### 针对已有数据库的用法
+如果启动的 `mysql` 容器实例有一个已经包含数据库的数据目录(特别是一个 `mysql` 的子目录)，则在 run 命令行中的`$MYSQL_ROOT_PASSWORD`变量应该略写；任何情况下它都会被忽视，任何情况下预先存在的数据库都不会被修改。
 
 ### 2. `docker pull million12/nginx-php:php56`
 
