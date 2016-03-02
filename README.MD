@@ -4,7 +4,8 @@
 # [Docker](https://github.com/bigqiang/study/tree/master/docker)
 
 # Windows 10 (64) IIS+MySQL+PHP+memcached 开发环境部署
-  1. PHP 5.6.13 安装
+
+1. PHP 5.6.13 安装
 
 在 http://windows.php.net/download 下找到相应的 VC11 x86 Non Thread Safe 版本下载。注因为除php7版本外的其他php的x64版本都属于试验性质，暂不使用。
 
@@ -16,7 +17,7 @@
 
 在php目录下命令行下执行 `php -v` 命令，如果正确运行则安装正确，如果出现 msvcr110.dll 缺失的报错，则需要安装 [Visual C++ Redistributable for Visual Studio 2012 Update 4](https://www.microsoft.com/zh-CN/download/details.aspx?id=30679) 。注意安装的程序要与php的对应，比如 x86 则对应下载 x86 的，这与 Windows 版本是否是64位无关。下载后安装即可。
 
-  2. MySQL 安装
+2. MySQL 安装
 
 这里以当前最新版本 5.7 社区版本来说明。先[官网网址下载相应的版本](http://dev.mysql.com/downloads/mysql/)，这里下载的是 64 位的版本。下载后，解压释放到 `D:\Program Files\MySQL\MySQL Server 5.7` 路径下面。
 
@@ -43,7 +44,7 @@ mysql> exit
 
 ```
 
-  3. IIS安装
+3. IIS安装
 
 控制面板 -> 程序和功能 -> 启用或关闭 Windows 功能 -> 勾选上 `Internet Information Services` 下的 `Web 管理工具` 和 `万维网服务`。`万维网服务`中的 `应用程序开发功能` 下的 `CGI`/`ISAPI扩展`/`ISAPI筛选器`一定要选中。保存退出。
 
@@ -51,7 +52,7 @@ mysql> exit
 
 回到自己创建的网站上，点击`基本设置`，将物理路径指向自己的站点代码文件。
 
-  4. memcached 安装
+4. memcached 安装
 
 本处下载的是 64位的版本，[链接在这里](http://www.urielkatz.com/archive/detail/memcached-64-bit-windows/) 。
 
@@ -61,9 +62,3 @@ D:\memcached-win64\>memcached -d install(安装服务)
 
 D:\memcached-win64\>memcached -d start(启动memcache服务，默认分配64M内存，使用11211端口)
 ```
-
-
-
-
-
-
