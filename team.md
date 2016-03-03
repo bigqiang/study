@@ -144,7 +144,3 @@ cp /var/lib/jenkins/jobs/TSD-Nav/workspace/bin/TSD-Nav-Re*.apk /home/tuyou/Seafi
 echo '******************* Finish build *************************'
 echo "buld end time：`date`"
 ```
-
-其实没有过多解释，如果需要了解细节的朋友，可以联系我。
-
-
