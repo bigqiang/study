@@ -43,4 +43,6 @@ sudo vi /var/lib/boot2docker/profile
 ```
 在 `profile` 文件末尾加上一行 `EXTRA_ARGS='--registry-mirror=http://hub-mirror.c.163.com'`，保存退出。
 
+**注意：** 如果虚机重新启动则 profile 文件会被恢复成默认配置，所以镜像源得重新设置。
+
 
