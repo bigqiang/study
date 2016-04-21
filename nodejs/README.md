@@ -2,6 +2,8 @@
 
 ## 入门
 
+[本教程示例代码](https://github.com/manuelkiessling/nodebeginner.org/tree/master/code/application)
+
 ### 构建应用的模块
 
 #### 一个基础的HTTP服务器
