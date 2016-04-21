@@ -3,6 +3,8 @@
 
 # [Docker](https://github.com/bigqiang/study/tree/master/docker)
 
+# [Node.js 学习](https://github.com/bigqiang/study/tree/master/nodejs)
+
 # Windows 10 (64) IIS+MySQL+PHP+memcached 开发环境部署
 
 ## 1. PHP 5.6.13 安装
