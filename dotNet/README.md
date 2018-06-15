@@ -10,8 +10,7 @@
 int age = 4;
 string name = "Soren";
 // Using curly bracket syntax.
-string greeting = string.Format("Hello {0} you
-are {1} years old.", name, age);
+string greeting = string.Format("Hello {0} you are {1} years old.", name, age);
 // Using string interpolation
 string greeting2 = $"Hello {name} you are {age} years old.";
 string greeting = string.Format("Hello {0} you are {1} years old.", name.ToUpper(), age);
@@ -26,18 +25,18 @@ string greeting2 = $"\tHello {name.ToUpper()} you are {age} years old.";
 // 新特性，可对类型检查
 switch (choice)
 {
-	case int i:
-		Console.WriteLine("Your choice is an integer {0}.",i);
-		break;
-	case string s:
-		Console.WriteLine("Your choice is a string. {0}", s);
-		break;
-	case decimal d:
-		Console.WriteLine("Your choice is a decimal. {0}", d);
-		break;
-	default:
-		Console.WriteLine("Your choice is something else");
-		break;
+    case int i:
+        Console.WriteLine("Your choice is an integer {0}.",i);
+        break;
+    case string s:
+        Console.WriteLine("Your choice is a string. {0}", s);
+        break;
+    case decimal d:
+        Console.WriteLine("Your choice is a decimal. {0}", d);
+        break;
+    default:
+        Console.WriteLine("Your choice is something else");
+        break;
 }
 ```
 
@@ -45,27 +44,27 @@ switch (choice)
 //除对类型检查，还对值进行匹配
 static void ExecutePatternMatchingSwitchWithWhen()
 {
-	Console.WriteLine("1 [C#], 2 [VB]");
-	Console.Write("Please pick your language preference: ");
-	object langChoice = Console.ReadLine();
-	var choice = int.TryParse(langChoice.ToString(),
-	out int c) ? c : langChoice;
-	switch (choice)
-	{
-		case int i when i == 2:
-		case string s when s.Equals("VB",
-			StringComparison.OrdinalIgnoreCase):
-			Console.WriteLine("VB: OOP, multithreading, and more!");
-			break;
-		case int i when i == 1:
-		case string s when s.Equals("C#",	StringComparison.OrdinalIgnoreCase):
-			Console.WriteLine("Good choice, C# is a fine language.");
-			break;
-		default:
-			Console.WriteLine("Well...good luck with that!");
-			break;
-	}
-	Console.WriteLine();
+    Console.WriteLine("1 [C#], 2 [VB]");
+    Console.Write("Please pick your language preference: ");
+    object langChoice = Console.ReadLine();
+    var choice = int.TryParse(langChoice.ToString(),
+    out int c) ? c : langChoice;
+    switch (choice)
+    {
+        case int i when i == 2:
+        case string s when s.Equals("VB",
+            StringComparison.OrdinalIgnoreCase):
+            Console.WriteLine("VB: OOP, multithreading, and more!");
+            break;
+        case int i when i == 1:
+        case string s when s.Equals("C#", StringComparison.OrdinalIgnoreCase):
+            Console.WriteLine("Good choice, C# is a fine language.");
+            break;
+        default:
+            Console.WriteLine("Well...good luck with that!");
+            break;
+    }
+    Console.WriteLine();
 }
 ```
 ### 3 数组
@@ -124,10 +123,10 @@ myObjects[2] = new DateTime(1969, 3, 24);
 myObjects[3] = "Form & Void";
 foreach (object obj in myObjects)
 {
-	// Print the type and value for each item in
-	array.
-	Console.WriteLine("Type: {0}, Value: {1}",
-	obj.GetType(), obj);
+    // Print the type and value for each item in
+    array.
+    Console.WriteLine("Type: {0}, Value: {1}",
+    obj.GetType(), obj);
 }
 ```
 以上代码会返回以下结果：
@@ -146,14 +145,14 @@ int[,] myMatrix;
 myMatrix = new int[3,4];
 // Populate (3 * 4) array.
 for(int i = 0; i < 3; i++)
-	for(int j = 0; j < 4; j++)
-		myMatrix[i, j] = i * j;
+    for(int j = 0; j < 4; j++)
+        myMatrix[i, j] = i * j;
 // Print (3 * 4) array.
 for(int i = 0; i < 3; i++)
 {
-	for(int j = 0; j < 4; j++)
-	Console.Write(myMatrix[i, j] + "\t");
-	Console.WriteLine();
+    for(int j = 0; j < 4; j++)
+    Console.Write(myMatrix[i, j] + "\t");
+    Console.WriteLine();
 }
 ```
 第二种多维数组类型称之为` jagged array`（锯齿数组）。顾名思义，该类型数组包含多个内部数组，且每个数组的上限不尽相同，如：
@@ -163,13 +162,13 @@ for(int i = 0; i < 3; i++)
 int[][] myJagArray = new int[5][];
 // Create the jagged array.
 for (int i = 0; i < myJagArray.Length; i++)
-	myJagArray[i] = new int[i + 7];
+    myJagArray[i] = new int[i + 7];
 // Print each row (remember, each element is defaulted to zero!).
 for(int i = 0; i < 5; i++)
 {
-	for(int j = 0; j < myJagArray[i].Length; j++)
-		Console.Write(myJagArray[i][j] + " ");
-	Console.WriteLine();
+    for(int j = 0; j < myJagArray[i].Length; j++)
+        Console.Write(myJagArray[i][j] + " ");
+    Console.WriteLine();
 }
 ```
 
@@ -178,24 +177,24 @@ for(int i = 0; i < 5; i++)
 ```C#
 static void PrintArray(int[] myInts)
 {
-	for(int i = 0; i < myInts.Length; i++)
-		Console.WriteLine("Item {0} is {1}", i,	myInts[i]);
+    for(int i = 0; i < myInts.Length; i++)
+        Console.WriteLine("Item {0} is {1}", i,    myInts[i]);
 }
 static string[] GetStringArray()
 {
-	string[] theStrings = {"Hello", "from","GetStringArray"};
-	return theStrings;
+    string[] theStrings = {"Hello", "from","GetStringArray"};
+    return theStrings;
 }
 ```
 
 #### 基类 System.Array
 每个创建的数组都有很多来自`System.Array`类的功能。如下表提供一些成员方式：
-Clear()		静态方法，将数组中一定范围的元素设置空值（数值型0 对象引用null，布尔型false）
-CopyTo()	用于复制源数组元素到目标数组中
-Length	属性。返回数组的项数
-Rank	属性。返回当前数组的维数
-Reverse()	静态方法。对一维数组的内容反转
-Sort()	静态方法。对一维数组基础类型数据排序，也可对自定义类型排序。
+Clear()        静态方法，将数组中一定范围的元素设置空值（数值型0 对象引用null，布尔型false）
+CopyTo()    用于复制源数组元素到目标数组中
+Length    属性。返回数组的项数
+Rank    属性。返回当前数组的维数
+Reverse()    静态方法。对一维数组的内容反转
+Sort()    静态方法。对一维数组基础类型数据排序，也可对自定义类型排序。
 
 
 ### 方法和参数修饰符
@@ -218,18 +217,18 @@ params 该参数修饰符允许你使用可变数量的参数以单个逻辑参�
 // out参数必须由调用方法指定
 static void Add(int x, int y, out int ans)
 {
-	ans = x + y;
+    ans = x + y;
 }
 
 static void Main(string[] args)
 {
-	Console.WriteLine("***** Fun with Methods *****");
-	...
-	// 不用给用做输出的局部变量指派初值, 仅作为输出参数用于一次性使用
-	// C# 7 允许 out 参数在方法调用中声明
-	Add(90, 90, out int ans);
-	Console.WriteLine("90 + 90 = {0}", ans);
-	Console.ReadLine();
+    Console.WriteLine("***** Fun with Methods *****");
+    ...
+    // 不用给用做输出的局部变量指派初值, 仅作为输出参数用于一次性使用
+    // C# 7 允许 out 参数在方法调用中声明
+    Add(90, 90, out int ans);
+    Console.WriteLine("90 + 90 = {0}", ans);
+    Console.ReadLine();
 }
 ```
 C# 的 out 修饰符有一个有用目的：允许调用者从单一方法中获取多个输出。
@@ -237,34 +236,34 @@ C# 的 out 修饰符有一个有用目的：允许调用者从单一方法中获
 // Returning multiple output parameters.
 static void FillTheseValues(out int a, out string b, out bool c)
 {
-	a = 9;
-	b = "Enjoy your string.";
-	c = true;
+    a = 9;
+    b = "Enjoy your string.";
+    c = true;
 }
 static void Main(string[] args)
 {
-	Console.WriteLine("***** Fun with Methods *****");
-	...
-	int i; string str; bool b;
-	FillTheseValues(out i, out str, out b);
-	Console.WriteLine("Int is: {0}", i);
-	Console.WriteLine("String is: {0}", str);
-	Console.WriteLine("Boolean is: {0}", b);
-	Console.ReadLine();
+    Console.WriteLine("***** Fun with Methods *****");
+    ...
+    int i; string str; bool b;
+    FillTheseValues(out i, out str, out b);
+    Console.WriteLine("Int is: {0}", i);
+    Console.WriteLine("String is: {0}", str);
+    Console.WriteLine("Boolean is: {0}", b);
+    Console.ReadLine();
 }
 ```
 记住，定义输出参数的方法一定要在退出该方法域前给该参数赋一个合法值。下面代码未遵从该原则，会导致一个编译错误：
 ```C#
 static void ThisWontCompile(out int a)
 {
-	Console.WriteLine("Error! Forgot to assign output arg!");
+    Console.WriteLine("Error! Forgot to assign output arg!");
 }
 ```
 如果不在意 out 参数值，可用一个下划线（discard）做占位符。比如，想决定一个字串是否是合法的日期格式，但不关心解析后的日期，可以这样写：
 ```C#
 if (DateTime.TryParse(dateString, out _)
 {
-	//do something
+    //do something
 }
 ```
 #### ref 修饰符
@@ -276,20 +275,20 @@ out 和 ref 差别
 // Reference parameters.
 public static void SwapStrings(ref string s1, ref string s2)
 {
-	string tempStr = s1;
-	s1 = s2;
-	s2 = tempStr;
+    string tempStr = s1;
+    s1 = s2;
+    s2 = tempStr;
 }
 static void Main(string[] args)
 {
-	Console.WriteLine("***** Fun with Methods *****");
-	...
-	string str1 = "Flip";
-	string str2 = "Flop";
-	Console.WriteLine("Before: {0}, {1} ", str1, str2);
-	SwapStrings(ref str1, ref str2);
-	Console.WriteLine("After: {0}, {1} ", str1, str2);
-	Console.ReadLine();
+    Console.WriteLine("***** Fun with Methods *****");
+    ...
+    string str1 = "Flip";
+    string str2 = "Flop";
+    Console.WriteLine("Before: {0}, {1} ", str1, str2);
+    SwapStrings(ref str1, ref str2);
+    Console.WriteLine("After: {0}, {1} ", str1, str2);
+    Console.ReadLine();
 }
 ```
 
@@ -300,7 +299,7 @@ ref除修饰参数外，C#7还可在其他地方定义使用和返回引用型�
 public static ref string SampleRefReturn(string[]
 strArray, int position)
 {
-	return ref strArray[position];
+    return ref strArray[position];
 }
 ```
 任何指定引用的变化返回都会修改这个数组，如下：
@@ -323,8 +322,8 @@ After: one, new, three
  ```C#
  ThisWillNotWork(string[] array)
  {
-	int foo = 5;
-	return ref foo;
+    int foo = 5;
+    return ref foo;
  }
  ```
  3. 该新特性不适用于异步方法
@@ -335,38 +334,167 @@ After: one, new, three
 // Return average of "some number" of doubles.
 static double CalculateAverage(params double[] values)
 {
-	Console.WriteLine("You sent me {0} doubles.", values.Length);
-	double sum = 0;
-	if(values.Length == 0)
-		return sum;
-	for (int i = 0; i < values.Length; i++)
-		sum += values[i];
-	return (sum / values.Length);
+    Console.WriteLine("You sent me {0} doubles.", values.Length);
+    double sum = 0;
+    if(values.Length == 0)
+        return sum;
+    for (int i = 0; i < values.Length; i++)
+        sum += values[i];
+    return (sum / values.Length);
 }
 static void Main(string[] args)
 {
-	Console.WriteLine("***** Fun with Methods *****");
-	...
-	// Pass in a comma-delimited list of doubles...
-	double average;
-	average = CalculateAverage(4.0, 3.2, 5.7, 64.22,87.2);
-	Console.WriteLine("Average of data is: {0}", average);
-	// ...or pass an array of doubles.
-	double[] data = { 4.0, 3.2, 5.7 };
-	average = CalculateAverage(data);
-	Console.WriteLine("Average of data is: {0}", average);
-	// Average of 0 is 0!
-	Console.WriteLine("Average of data is: {0}", CalculateAverage());
-	Console.ReadLine();
+    Console.WriteLine("***** Fun with Methods *****");
+    ...
+    // Pass in a comma-delimited list of doubles...
+    double average;
+    average = CalculateAverage(4.0, 3.2, 5.7, 64.22,87.2);
+    Console.WriteLine("Average of data is: {0}", average);
+    // ...or pass an array of doubles.
+    double[] data = { 4.0, 3.2, 5.7 };
+    average = CalculateAverage(data);
+    Console.WriteLine("Average of data is: {0}", average);
+    // Average of 0 is 0!
+    Console.WriteLine("Average of data is: {0}", CalculateAverage());
+    Console.ReadLine();
 }
 ```
 
 注意：为避免歧义，C#要求方法只能支持一个params参数，而且必须是参数列表中最后一个传参。
 
+#### 定义可选参数
+C#允许你创建的方法中可以选填参数。即在调用方法时允许省略你认为不必要的参数。
+```C#
+static void EnterLogData(string message, string owner = "Programmer")
+{
+    Console.Beep();
+    Console.WriteLine("Error: {0}", message);
+    Console.WriteLine("Owner of Error: {0}", owner);
+}
+static void Main(string[] args)
+{
+    Console.WriteLine("***** Fun with Methods *****");
+    ...
+    EnterLogData("Oh no! Grid can't find data");
+    EnterLogData("Oh no! I can't find the payroll data", "CFO");
+    Console.ReadLine();
+}
+```
+注意：可选参数必须在编译时确定，绝不能在运行时解析确定。否则会报编译时错误。下面改写上面的EnterLogData方法说明。
+```C#
+// Error! The default value for an optional arg must be known
+// at compile time!
+static void EnterLogData(string message, string owner = "Programmer", DateTime timeStamp = DateTime.Now)
+{
+    Console.Beep();
+    Console.WriteLine("Error: {0}", message);
+    Console.WriteLine("Owner of Error: {0}", owner);
+    Console.WriteLine("Time of Error: {0}", timeStamp);
+}
+```
+这会编译失败，因为 DateTime类中的 Now属性在运行时才会解析，不会在编译时进行。
 
+为避免歧义，可选参数总是占位于方法签名的尾部。否则会报编译器错误。
 
+##### 使用命名参数调用方法
+命名参数（named argument）允许以随意选择顺序的参数调用方法。示例：
+```C#
+static void DisplayFancyMessage(ConsoleColor textColor, ConsoleColor backgroundColor, string message)
+{
+    // Store old colors to restore after message is printed.
+    ConsoleColor oldTextColor = Console.ForegroundColor;
+    ConsoleColor oldbackgroundColor = Console.BackgroundColor;
+    // Set new colors and print message.
+    Console.ForegroundColor = textColor;
+    Console.BackgroundColor = backgroundColor;
+    Console.WriteLine(message);
+    // Restore previous colors.
+    Console.ForegroundColor = oldTextColor;
+    Console.BackgroundColor = oldbackgroundColor;
+}
+static void Main(string[] args)
+{
+    Console.WriteLine("***** Fun with Methods *****");
+    ...
+    DisplayFancyMessage(message: "Wow! Very Fancy indeed!", textColor: ConsoleColor.DarkRed, backgroundColor: ConsoleColor.White);
+    DisplayFancyMessage(backgroundColor: ConsoleColor.Green, message: "Testing...", textColor: ConsoleColor.DarkBlue);
+    Console.ReadLine();
+}
+```
+以上代码执行良好。如果要想使用命名参数调用方法，就必须在调用时先列出形参名称后面加上冒号，再跟上实参。
+注意下面的两种写法，前者正确，后者错误：
+```C#
+// This is OK, as positional args are listed before named args.
+DisplayFancyMessage(ConsoleColor.Blue, message: "Testing...", backgroundColor: ConsoleColor.White);
+// This is an ERROR, as positional args are listed after named args.
+DisplayFancyMessage(message: "Testing...", backgroundColor: ConsoleColor.White, ConsoleColor.Blue);
+```
+命名参数经常与可选参数联合使用：
+```C#
+static void DisplayFancyMessage(ConsoleColor textColor = ConsoleColor.Blue, ConsoleColor backgroundColor = ConsoleColor.White, string message = "Test Message")
+{
+    ...
+}
 
+//仅需要传参 message ，其他用默认
+DisplayFancyMessage(message: "Hello!");
+```
+##### 方法的重载
+简言之，定义了一组名称相同的方法，唯一的不同就是虚参的数量或类型，被称之重载的方法。
 
+注意：泛型方法就使用了重载的概念。
+
+#### 局部函数（新）
+C# 7的新特性，在方法中创建方法。局部函数是在另一个函数中声明的函数。
+
+注意：一直用“方法”，怎么突然用“函数”。两者有什么区别。学术上讲，二者不同仍有争议。实际上二者可互换使用。在本文中，二者等效。官方命名“局部函数”，我不想因本文一致性而改变它。
+
+示例：
+```C#
+static int AddWrapper(int x, int y)
+{
+    //Do some validation here
+    return Add();
+    int Add()
+    {
+        return x + y;
+    }
+}
+```
+
+### enum类型
+注意：不要把 enum 和 enumerator 混淆。enum 是名值对的自定义数据类型。enumerator 是.NET接口 IEnumerable 实现的类或结构。通常这个接口都是用象System.Array这样的集合类（collection class）来实现。
+
+示例：
+```C#
+// A custom enumeration.
+enum EmpType
+{
+    Manager, // = 0
+    Grunt, // = 1
+    Contractor, // = 2
+    VicePresident // = 3
+}
+// Begin with 102.
+enum EmpType
+{
+    Manager = 102,
+    Grunt, // = 103
+    Contractor, // = 104
+    VicePresident // = 105
+}
+// 也可以不连续
+enum EmpType
+{
+    Manager = 10,
+    Grunt = 1,
+    Contractor = 100,
+    VicePresident = 9
+}
+```
+
+#### Controlling the Underlying Storage for an enum
+（P260）
 
 
 
