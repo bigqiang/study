@@ -494,7 +494,72 @@ enum EmpType
 ```
 
 #### Controlling the Underlying Storage for an enum
-（P260）
+默认状态下，枚举类型保存值的存储类型是System.Int32（C# int）。不过这可以随时修改。C#的枚举类型对任意核心系统类型（byte，short，int，或long）。例如，想设置EmpType存储类型是 byte 而不是 int ， 可以这样写：
+```C#
+// This time, EmpType maps to an underlying byte.
+enum EmpType : byte
+{
+    Manager = 10,
+    Grunt = 1,
+    Contractor = 100,
+    VicePresident = 9
+}
+```
+修改枚举的基础类型有助于在低内存设备上构建.NET应用。当然每个值必须在限定范围内，比如下代码就会报编译器错误：
+```C#
+// Compile-time error! 999 is too big for a byte!
+enum EmpType : byte
+{
+    Manager = 10,
+    Grunt = 1,
+    Contractor = 100,
+    VicePresident = 999
+}
+```
+
+#### 枚举变量的声明
+一旦确定了枚举的范围和存储类型后，就可用它代替数字。枚举是用户定义的数据类型，可以用于函数的返回值、方法的参数、局部变量等。假定你有一个名为 AskForBonus() 的方法，用 EmpType 做唯一参数，根据输出的参数值打印出对应的支付请求：
+```C#
+class Program
+{
+    static void Main(string[] args)
+    {
+        Console.WriteLine("**** Fun with Enums *****");
+        // Make an EmpType variable.
+        EmpType emp = EmpType.Contractor;
+        AskForBonus(emp);
+        Console.ReadLine();
+    }
+    // Enums as parameters.
+    static void AskForBonus(EmpType e)
+    {
+        switch (e)
+        {
+            case EmpType.Manager:
+                Console.WriteLine("How about stock options instead?");
+                break;
+            case EmpType.Grunt:
+                Console.WriteLine("You have got to be kidding...");
+                break;
+            case EmpType.Contractor:
+                Console.WriteLine("You already get enough cash...");
+                break;
+            case EmpType.VicePresident:
+                Console.WriteLine("VERY GOOD, Sir!");
+                break;
+        }
+    }
+}
+```
+注意：枚举类型是名值对确定的一套数据，因此给枚举变量设置一个未定义的值是非法。
+
+#### System.Enum 类型
+.NET的枚举类型是由 System.Enum类得到功能。
+（P262）
+
+
+
+
 
 
 
