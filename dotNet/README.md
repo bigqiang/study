@@ -554,8 +554,417 @@ class Program
 注意：枚举类型是名值对确定的一套数据，因此给枚举变量设置一个未定义的值是非法。
 
 #### System.Enum 类型
-.NET的枚举类型是由 System.Enum类得到功能。
-（P262）
+.NET的枚举类型是由 System.Enum 类获得功能。该类定义了许多方法，允许查询和转换一个给定的枚举。比如方法 `Enum.GetUnderlyingType()` ，就如名字暗示的，它会返回存储枚举类型值的数据类型。如前面的声明的 EmpType 类型是 System.Byte，代码示例：
+```C#
+static void Main(string[] args)
+{
+    Console.WriteLine("**** Fun with Enums *****");
+    // Make a contractor type.
+    EmpType emp = EmpType.Contractor;
+    AskForBonus(emp);
+    // Print storage for the enum.
+    Console.WriteLine("EmpType uses a {0} for storage", Enum.GetUnderlyingType(emp.GetType()));
+    Console.ReadLine();
+}
+```
+如上所示，用了`GetType()`方法来获取元数据，该方法对.NET基类库中所有类型都通用。还有一个办法使用有C#的typeof运算符。这样做的好处是不必见到变量的元数据实体。
+```C#
+// This time use typeof to extract a Type.
+Console.WriteLine("EmpType uses a {0} for storage", Enum.GetUnderlyingType(typeof(EmpType)));
+```
+
+#### 动态查找枚举的名值对
+除 `Enum.GetUnderlyingType()` 方法，所有C#枚举还支持 `ToString()`。
+```C#
+static void Main(string[] args)
+{
+    Console.WriteLine("**** Fun with Enums *****");
+    EmpType emp = EmpType.Contractor;
+    AskForBonus(emp);
+    // Prints out "emp is a Contractor".
+    Console.WriteLine("emp is a {0}.", emp.ToString());
+    Console.ReadLine();
+}
+```
+
+System.Enum 也定义另一个静态方法 GetValues()。该方法返回了一个 `System.Array` 的实例。数组中的每个元素项与指定枚举的一个成员对应。它能打印任意枚举类型传参的名值对：
+```C#
+// This method will print out the details of any enum.
+static void EvaluateEnum(System.Enum e)
+{
+    Console.WriteLine("=> Information about {0}", e.GetType().Name);
+    Console.WriteLine("Underlying storage type: {0}", Enum.GetUnderlyingType(e.GetType()));
+    // Get all name-value pairs for incoming parameter.
+    Array enumData = Enum.GetValues(e.GetType());
+    Console.WriteLine("This enum has {0} members.", enumData.Length);
+    // Now show the string name and associated value, using the D format
+    // flag (see Chapter 3).
+    for(int i = 0; i < enumData.Length; i++)
+    {
+        Console.WriteLine("Name: {0}, Value: {0:D}", enumData.GetValue(i));
+    }
+    Console.WriteLine();
+}
+```
+
+### 理解结构类型（也叫值类型）
+结构是用户定义类型（如枚举）；结构不是简单的名值对集合，它包含任意数量的数据字段以及操作这些字段的成员方法。
+```C#
+struct Point
+{
+    // Fields of the structure.
+    public int X;
+    public int Y;
+    // Add 1 to the (X, Y) position.
+    public void Increment()
+    {
+        X++; Y++;
+    }
+    // Subtract 1 from the (X, Y) position.
+    public void Decrement()
+    {
+        X--; Y--;
+    }
+    // Display the current position.
+    public void Display()
+    {
+        Console.WriteLine("X = {0}, Y = {1}", X, Y);
+    }
+}
+static void Main(string[] args)
+{
+    Console.WriteLine("***** A First Look at Structures *****\n");
+    // Create an initial Point.
+    Point myPoint;
+    myPoint.X = 349;
+    myPoint.Y = 76;
+    myPoint.Display();
+    // Adjust the X and Y values.
+    myPoint.Increment();
+    myPoint.Display();
+    Console.ReadLine();
+}
+```
+输出结果：
+```
+***** A First Look at Structures *****
+X = 349, Y = 76
+X = 350, Y = 77
+```
+注意：在类和结构中定义public数据常被看作坏风格。
+
+#### 结构变量的创建
+创建好结构变量，在调用其成员方法前要先对每个public字段数据赋值，否则会有编译器错误：
+```C#
+// Error! Did not assign Y value.
+Point p1;
+p1.X = 10;
+p1.Display();
+// OK! Both fields assigned before use.
+Point p2;
+p2.X = 10;
+p2.Y = 10;
+p2.Display();
+```
+也可以用 new 关键词创建结构变量，它会调用结构的默认构造器。按定义，默认构造器没有任何参数。调用结构的默认构造器的好处是会给每个字段数据自动设置成默认值。
+```C#
+// Set all fields to default values
+// using the default constructor.
+Point p1 = new Point();
+// Prints X=0,Y=0.
+p1.Display();
+```
+还可以自定义一个构造器。如下：
+```C#
+struct Point
+{
+    // Fields of the structure.
+    public int X;
+    public int Y;
+    // A custom constructor.
+    public Point(int XPos, int YPos)
+    {
+        X = XPos;
+        Y = YPos;
+    }
+    ...
+}
+
+...
+// Call custom constructor.
+Point p2 = new Point(50, 60);
+// Prints X=50,Y=60.
+p2.Display();
+```
+
+### 值类型与引用类型区别
+与数组、字串或枚举不同，结构在.NET库中没有一样的命名表示（即，没有System.Structure类），仅隐式地派生自 System.ValueType。System.ValueType的角色保证了所派生的类型都是在堆栈中分配，而不是在可被垃圾收集的堆中。栈中的分配的数据创建和销毁都很快，生命周期由定义的域决定；堆分配的数据，由垃圾收集器监控，生命周期由许多因素决定。
+功能上，System.ValueType 的唯一目的就是重载由 基于值与基于引用语义的System.Object定义的虚拟方法。ValueType的基类是System.Object。
+
+#### 值类型、引用类型以及赋值操作符
+```C#
+// Assigning two intrinsic value types results in
+// two independent variables on the stack.
+static void ValueTypeAssignment()
+{
+    Console.WriteLine("Assigning value types\n");
+    Point p1 = new Point(10, 10);
+    Point p2 = p1;
+    // Print both points.
+    p1.Display();
+    p2.Display();
+    // Change p1.X and print again. p2.X is not changed.
+    p1.X = 100;
+    Console.WriteLine("\n=> Changed p1.X\n");
+    p1.Display();
+    p2.Display();
+}
+```
+这里将p1赋值给p2，二者是值类型。则二者分别独立的。因此更其中一个结构的字段数据不会影响别一个：
+```
+Assigning value types
+X = 10, Y = 10
+X = 10, Y = 10
+=> Changed p1.X
+X = 100, Y = 10
+X = 10, Y = 10
+```
+与之形成强烈对照的是引用类型（就是所有的类实例），该引用变量指向的是内存。举例：
+```C#
+// Classes are always reference types.
+class PointRef
+{
+    // Same members as the Point structure...
+    // Be sure to change your constructor name to PointRef!
+    public PointRef(int XPos, int YPos)
+    {
+        X = XPos;
+        Y = YPos;
+    }
+}
+static void ReferenceTypeAssignment()
+{
+    Console.WriteLine("Assigning reference types\n");
+    PointRef p1 = new PointRef(10, 10);
+    PointRef p2 = p1;
+    // Print both point refs.
+    p1.Display();
+    p2.Display();
+    // Change p1.X and print again.
+    p1.X = 100;
+    Console.WriteLine("\n=> Changed p1.X\n");
+    p1.Display();
+    p2.Display();
+}
+```
+本例中两个引用指向受控堆中同一对象，因此是用p1的引用更改的X值，p2.X会报出相同值。输出结果如下：
+```
+Assigning reference types
+X = 10, Y = 10
+X = 10, Y = 10
+=> Changed p1.X
+X = 100, Y = 10
+X = 100, Y = 10
+```
+
+#### 包含引用类型的值类型
+以下一个类使用了自定义构造器，由一个字串信息维护。还用到一个结构。
+```C#
+class ShapeInfo
+{
+    public string InfoString;
+    public ShapeInfo(string info)
+    {
+        InfoString = info;
+    }
+}
+struct Rectangle
+{
+    // The Rectangle structure contains a reference type member.
+    public ShapeInfo RectInfo;
+    public int RectTop, RectLeft, RectBottom, RectRight;
+    public Rectangle(string info, int top, int left, int bottom, int right)
+    {
+        RectInfo = new ShapeInfo(info);
+        RectTop = top; RectBottom = bottom;
+        RectLeft = left; RectRight = right;
+    }
+    public void Display()
+    {
+        Console.WriteLine("String = {0}, Top = {1}, Bottom = {2}, " + "Left = {3}, Right = {4}", RectInfo.infoString, RectTop, RectBottom, RectLeft, RectRight);
+    }
+}
+```
+本例中，值类型中有一个引用类型。如果将一个 Rectangele变量赋值给另一个会怎样？引用类型对象的状态会完全复制吗？可以在 Main() 中调用看看：
+```C#
+static void ValueTypeContainingRefType()
+{
+    // Create the first Rectangle.
+    Console.WriteLine("-> Creating r1");
+    Rectangle r1 = new Rectangle("First Rect", 10, 10, 50, 50);
+    // Now assign a new Rectangle to r1.
+    Console.WriteLine("-> Assigning r2 to r1");
+    Rectangle r2 = r1;
+    // Change some values of r2.
+    Console.WriteLine("-> Changing values of r2");
+    r2.RectInfo.InfoString = "This is new info!";
+    r2.RectBottom = 4444;
+    // Print values of both rectangles.
+    r1.Display();
+    r2.Display();
+}
+```
+输出结果：
+```
+-> Creating r1
+-> Assigning r2 to r1
+-> Changing values of r2
+String = This is new info!, Top = 10, Bottom = 50, Left = 10, Right = 50
+String = This is new info!, Top = 10, Bottom = 4444, Left = 10, Right = 50
+```
+如你所见，r1/r2显示相同值。默认情况下，值类型包含引用类型时，赋值会得到引用的副本。本例中，有两个独立结构，每个结构都包含了指向内存中相同的对象。如果想执行深拷贝，要内部引用状态完全复制给另一个新对象，唯一的办法是实现 ICloneable 接口。
+
+#### 按值类型传参引用类型
+引用类型或值类型都可以传参给方法，但二者有所不同。
+```C#
+class Person
+{
+    public string personName;
+    public int personAge;
+    // Constructors.
+    public Person(string name, int age)
+    {
+        personName = name;
+        personAge = age;
+    }
+    public Person(){}
+    public void Display()
+    {
+        Console.WriteLine("Name: {0}, Age: {1}", personName, personAge);
+    }
+}
+static void SendAPersonByValue(Person p)
+{
+    // Change the age of "p"?
+    p.personAge = 99;
+    // Will the caller see this reassignment?
+    p = new Person("Nikki", 99);
+}
+```
+上面调用Person对象是按值传递的（注意没有象out或ref这样的参数修饰符）。现在在Main()方法中测试一下：
+```C#
+static void Main(string[] args)
+{
+    // Passing ref-types by value.
+    Console.WriteLine("***** Passing Person object by value *****");
+    Person fred = new Person("Fred", 12);
+    Console.WriteLine("\nBefore by value call, Person is:");
+    fred.Display();
+    SendAPersonByValue(fred);
+    Console.WriteLine("\nAfter by value call, Person is:");
+    fred.Display();
+    Console.ReadLine();
+}
+```
+返回如下结果：
+```
+***** Passing Person object by value *****
+Before by value call, Person is:
+Name: Fred, Age: 12
+After by value call, Person is:
+Name: Fred, Age: 99
+```
+
+#### 按引用类型传递引用类型
+现改用 SendAPersonByReference() 方法，按引用类型传递。（注意用了ref 参数修饰符）
+```C#
+static void SendAPersonByReference(ref Person p)
+{
+    // Change some data of "p".
+    p.personAge = 555;
+    // "p" is now pointing to a new object on the heap!
+    p = new Person("Nikki", 999);
+}
+static void Main(string[] args)
+{
+    // Passing ref-types by ref.
+    Console.WriteLine("***** Passing Person object by reference *****");
+    ...
+    Person mel = new Person("Mel", 23);
+    Console.WriteLine("Before by ref call, Person is:");
+    mel.Display();
+    SendAPersonByReference(ref mel);
+    Console.WriteLine("After by ref call, Person is:");
+    mel.Display();
+    Console.ReadLine();
+}
+```
+返回：
+```
+***** Passing Person object by reference *****
+Before by ref call, Person is:
+Name: Mel, Age: 23
+After by ref call, Person is:
+Name: Nikki, Age: 999
+```
+如你所见Mel更改了传递给它的变量。总结以上示例，牢记两条黄金规则：
+1. 如果引用类型是通过引用传递的，则被调用者可能会更改对象状态数据的值以及它所引用的对象的值。
+2. 如果引用类型是通过值传递的，则被调用者可能会更改对象的状态数据的值，但不会更改它所引用的对象的值。
+
+
+### C# 可空类型(Nullable)
+值类型不可能赋值 null。null常用于创建一个空对象引用。
+```C#
+static void Main(string[] args)
+{
+    // Compiler errors!
+    // Value types cannot be set to null!
+    bool myBool = null;
+    int myInt = null;
+    // OK! Strings are reference types.
+    string myString = null;
+}
+```
+C#支持可空数据类型的概念。简言之，null类型可表示基础类型的所有值，再加null值。因此声明可空的bool，可以赋值的集合{true,false,null}，在关系型数据库中很管用，库表中遇到未定义列的情况很常见。
+定义可空变量类型，要在基础数据类型后加“?”后缀。该语法仅用于值类型时是合法的。如果想创建一个可空的引用类型（含string）,会遇到编译时错误。与非空型变量类似，局部可空变量在使用前必须赋初始值。
+```C#
+static void LocalNullableVariables()
+{
+    // Define some local nullable variables.
+    int? nullableInt = 10;
+    double? nullableDouble = 3.14;
+    bool? nullableBool = null;
+    char? nullableChar = 'a';
+    int?[] arrayOfNullableInts = new int?[10];
+    // Error! Strings are reference types!
+    // string? s = "oops";
+}
+```
+
+C# 的“?”后缀是创建泛型 System.Nullable<T>结构类型的快捷方法。
+
+判断一个可空变量实际赋值是否是null，可用 HasValue 属性或`!=`操作符。
+
+#### 使用 Nullable 类型
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
