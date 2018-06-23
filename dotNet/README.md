@@ -946,9 +946,109 @@ C# 的“?”后缀是创建泛型 System.Nullable<T>结构类型的快捷方法
 判断一个可空变量实际赋值是否是null，可用 HasValue 属性或`!=`操作符。
 
 #### 使用 Nullable 类型
+示例：
+```C#
+class DatabaseReader
+{
+    // Nullable data field.
+    public int? numericValue = null;
+    public bool? boolValue = true;
+    // Note the nullable return type.
+    public int? GetIntFromDatabase()
+    { return numericValue; }
+    // Note the nullable return type.
+    public bool? GetBoolFromDatabase()
+    { return boolValue; }
+}
+static void Main(string[] args)
+{
+    Console.WriteLine("***** Fun with Nullable Data *****\n");
+    DatabaseReader dr = new DatabaseReader();
+    // Get int from "database".
+    int? i = dr.GetIntFromDatabase();
+    if (i.HasValue)
+        Console.WriteLine("Value of 'i' is: {0}", i.Value);
+    else
+        Console.WriteLine("Value of 'i' is undefined.");
+    // Get bool from "database".
+    bool? b = dr.GetBoolFromDatabase();
+    if (b != null)
+        Console.WriteLine("Value of 'b' is: {0}", b.Value);
+    else
+        Console.WriteLine("Value of 'b' is undefined.");
+    Console.ReadLine();
+}
+```
 
+#### null合并运算符（??）
+任何可能有null值的变量（如引用类型的变量或可空值类型变量）都可以使用“??”操作符，它称为 null合并操作符。该操作符允许你给一个可空类型赋值。假定给一个局部可空整数变量赋值100，如果该值从 GetIntFromDatabase() 是 null （当然，该方法被编程总返回null,）
+```C#
+static void Main(string[] args)
+{
+    Console.WriteLine("***** Fun with Nullable Data *****\n");
+    DatabaseReader dr = new DatabaseReader();
+    ...
+    // If the value from GetIntFromDatabase() is null,
+    // assign local variable to 100.
+    int myData = dr.GetIntFromDatabase() ?? 100;
+    Console.WriteLine("Value of myData: {0}", myData);
+    Console.ReadLine();
+}
+```
+使用“??”操作符的好处是提供传统 if/else 条件更简洁的版本。如果不使用它，则下面是等效的赋值100的代码：
+```C#
+// Long-hand notation not using ?? syntax.
+int? moreData = dr.GetIntFromDatabase();
+if (!moreData.HasValue)
+    moreData = 100;
+Console.WriteLine("Value of moreData: {0}", moreData);
+```
+#### null条件操作符
+为了安全，在进行运算前先要进行 null 值的判断，否则在测试变量为空时会有运行时错误。代码如下：
+```C#
+static void TesterMethod(string[] args)
+{
+    // We should check for null before accessing the array data!
+    if (args != null)
+    {
+        Console.WriteLine($"You sent me {args.Length} arguments.");
+    }
+}
+...
+//不会触发运行时错误
+TesterMethod(null);
+```
+现在C#新发布版本直接用 null条件操作符（把问号置于变量类型后，访问操作符前）简化前面示例的错误检查。不用使用 null，代码如下：
+```C#
+static void TesterMethod(string[] args)
+{
+    // We should check for null before accessing the array data!
+    Console.WriteLine($"You sent me {args?.Length} arguments.");
+}
+```
+本例中没用条件语句，仅用了“?”做后缀。如果args值为null，它对Length属性的调用不会抛出运行时错误。如果想打印出一个实际的值，可以利用 null合并操作符 来赋值：
+```C#
+Console.WriteLine($"You sent me {args?.Length ?? 0} arguments.");
+```
 
+### 元组类型(新)
+元组是包含多个字段的较轻量的数所结构。在C#6中引入，但功能有限。它的字段不会验证，而且不能定义自己的方法，更重要的是每个属性都是引用类型，会有潜在的内存和性能问题。在C#7中，元组使用全新的 ValueTuple 数据类型来取代引用类型，节省了大量内存。ValueTuple 数据类型基于元组的属性数量创建了不同结构。C#7中新增了一个特性，元组中每个属性都可以赋以特定的名字（就象变量），极大增强了可用性。
 
+#### 元组初步
+元组把值包含在圆括号中：`("a", 5, "c")`。
+注意，各值数据类型不必相同。圆括号结构也常用于把元组赋值给变量。
+```C#
+(string, int, string) values = ("a", 5, "c");
+var values = ("a", 5, "c");
+```
+注意：如以上代码不能编译，就需要安装 System.ValueTuple 的NuGet包。右击Solution Explorer,选择Manage NuGet Packages,点左上的Browse，搜索框中输入“System.ValueTuple”，然后选中点击安装。
+
+默认情况下，编译器给每个属性命名为 ItemX，这里的X表示基于元组位置以1开始的数字。如上面的元组三个属性名依次为 Item1/Item2/Item3。访问格式：
+```C#
+Console.WriteLine($"First item: {values.Item1}");
+Console.WriteLine($"Second item: {values.Item2}");
+Console.WriteLine($"Third item: {values.Item3}");
+```
 
 
 
