@@ -1030,6 +1030,9 @@ static void TesterMethod(string[] args)
 ```C#
 Console.WriteLine($"You sent me {args?.Length ?? 0} arguments.");
 ```
+=======
+	
+>>>>>>> Stashed changes
 
 ### 元组类型(新)
 元组是包含多个字段的较轻量的数所结构。在C#6中引入，但功能有限。它的字段不会验证，而且不能定义自己的方法，更重要的是每个属性都是引用类型，会有潜在的内存和性能问题。在C#7中，元组使用全新的 ValueTuple 数据类型来取代引用类型，节省了大量内存。ValueTuple 数据类型基于元组的属性数量创建了不同结构。C#7中新增了一个特性，元组中每个属性都可以赋以特定的名字（就象变量），极大增强了可用性。
