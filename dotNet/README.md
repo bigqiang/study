@@ -1050,12 +1050,68 @@ Console.WriteLine($"Second item: {values.Item2}");
 Console.WriteLine($"Third item: {values.Item3}");
 ```
 
+也可以给元组的左边或右边给每个属性指定名称。如果左右两边都指定名称，编译不会报错，不过右侧被忽略不会生效，左侧会生效。下面两行代码分别左在右设置名称，殊途同归。
+```C#
+(string FirstLetter, int TheNumber, string SecondLetter) valuesWithNames = ("a", 5, "c");
+//注意：在右边设置名称时，必须使用关键词 var
+var valuesWithNames2 = (FirstLetter: "a", TheNumber: 5, SecondLetter: "c");
 
+//右侧的名称 Custom1 和Custom2 会被忽略
+(int, int) example = (Custom1:5, Custom2:7);
+(int Field1, int Field2) example = (Custom1:5, Custom2:7);
+```
+现在该元组可用字段名来访问其属性了，同时也可以使用 `ItemX` 了，如下代码：
+```C#
+Console.WriteLine($"First item: {valuesWithNames.FirstLetter}");
+Console.WriteLine($"Second item: {valuesWithNames.TheNumber}");
+Console.WriteLine($"Third item: {valuesWithNames.SecondLetter}");
+//Using the item notation still works!
+Console.WriteLine($"First item: {valuesWithNames.Item1}");
+Console.WriteLine($"Second item: {valuesWithNames.Item2}");
+Console.WriteLine($"Third item: {valuesWithNames.Item3}");
+```
 
+#### 元组作为方法返回值
+`out`参数在方法调用中可返回多个值。还有其他办法达到同样目的。比如创建一个类或结构做返回值。但是类或结构用作一个方法的数据传输的话，就会多生成一些不必要开发的冗余代码。元组可完美胜任该任务，轻量且声明和使用都很方便。
+以下示例是`out`参数传递三个参数与元组的对比：
+```C#
+static void FillTheseValues(out int a, out string b, out bool c)
+{
+    a = 9;
+    b = "Enjoy your string.";
+    c = true;
+}
 
+static (int a,string b,bool c) FillTheseValues()
+{
+    return (9,"Enjoy your string.",true);
+}
+```
+方法调用也方便：
+```C#
+var samples = FillTheseValues();
+Console.WriteLine($"Int is: {samples.a}");
+Console.WriteLine($"String is: {samples.b}");
+Console.WriteLine($"Boolean is: {samples.c}");
+```
+可能更好的示例是把全称名称解析成独立部分 `(first, middle, last)` 。下面用了一个全称名称，并且返回一个包含多个不同部分的元组：
+```C#
+static (string first, string middle, string last) SplitNames(string fullName)
+{
+    //do what is needed to split the name apart
+    return ("Philip", "F", "Japikse");
+}
+```
 
+#### 元组的选择丢弃
+不需要的值，可以下`_`占位符
+```C#
+var (first, _, last) = SplitNames("Philip F Japikse");
+Console.WriteLine($"{first}:{last}");
+```
 
-
+#### 元组析构
+析构是指将一个元组的属性区分成独立使用的部分。如下示例，引入了 `Deconstruct()` 方法
 
 
 
