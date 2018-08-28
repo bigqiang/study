@@ -1048,6 +1048,12 @@ Console.WriteLine($"You sent me {args?.Length ?? 0} arguments.");
 var values = ("a", 5, "c");
 ```
 注意：如以上代码不能编译，就需要安装 System.ValueTuple 的NuGet包。右击Solution Explorer,选择Manage NuGet Packages,点左上的Browse，搜索框中输入“System.ValueTuple”，然后选中点击安装。
+=======
+	
+>>>>>>> Stashed changes
+=======
+	
+>>>>>>> Stashed changes
 
 默认情况下，编译器给每个属性命名为 ItemX，这里的X表示基于元组位置以1开始的数字。如上面的元组三个属性名依次为 Item1/Item2/Item3。访问格式：
 ```C#
