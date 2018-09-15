@@ -1111,7 +1111,32 @@ Console.WriteLine($"{first}:{last}");
 ```
 
 #### 元组析构
-析构是指将一个元组的属性区分成独立使用的部分。如下示例，引入了 `Deconstruct()` 方法
+析构 (Deconstructing) 是指将一个元组的属性区分成独立使用的部分 （Deconstructing is the term given when separating out the properties of a
+tuple to be used individually）。`FillTheseValues` 就是干这活的。该模式还有另一种用法，更实用，可以析构自定义类型。
+
+如下示例，引入了 `Deconstruct()` 方法，它以一个元组含有`XPos`和`YPos`属性的形式返回了`Point`实例，该实例包含了这两个独立的属性。
+```C#
+struct Point
+{
+	// Fields of the structure.
+	public int X;
+	public int Y;
+	// A custom constructor.
+	public Point(int XPos, int YPos)
+	{
+		X = XPos;
+		Y = YPos;
+	}
+	public (int XPos, int YPos) Deconstruct() => (X, Y);
+}
+```
+注意新方法 `Deconstruct()`，该方法可以任意命名，不过按约定常以`Deconstruct()`命名。这就可以让单一一个方法通过返回元组的形式得到该结构变量的所有独立值。
+```C#
+Point p = new Point(7,5);
+var pointValues = p.Deconstruct();
+Console.WriteLine($"X is: {pointValues.XPos}");
+Console.WriteLine($"Y is: {pointValues.YPos}");
+```
 
 
 
