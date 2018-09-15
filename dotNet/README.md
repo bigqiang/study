@@ -1032,10 +1032,6 @@ Console.WriteLine($"You sent me {args?.Length ?? 0} arguments.");
 ```
 =======
 	
->>>>>>> Stashed changes
-=======
-	
->>>>>>> Stashed changes
 
 ### 元组类型(新)
 元组是包含多个字段的较轻量的数所结构。在C#6中引入，但功能有限。它的字段不会验证，而且不能定义自己的方法，更重要的是每个属性都是引用类型，会有潜在的内存和性能问题。在C#7中，元组使用全新的 ValueTuple 数据类型来取代引用类型，节省了大量内存。ValueTuple 数据类型基于元组的属性数量创建了不同结构。C#7中新增了一个特性，元组中每个属性都可以赋以特定的名字（就象变量），极大增强了可用性。
@@ -1050,10 +1046,6 @@ var values = ("a", 5, "c");
 注意：如以上代码不能编译，就需要安装 System.ValueTuple 的NuGet包。右击Solution Explorer,选择Manage NuGet Packages,点左上的Browse，搜索框中输入“System.ValueTuple”，然后选中点击安装。
 =======
 	
->>>>>>> Stashed changes
-=======
-	
->>>>>>> Stashed changes
 
 默认情况下，编译器给每个属性命名为 ItemX，这里的X表示基于元组位置以1开始的数字。如上面的元组三个属性名依次为 Item1/Item2/Item3。访问格式：
 ```C#
