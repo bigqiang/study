@@ -582,43 +582,55 @@ static class TimeUtilClass
 - 多态：以相同类似方式处理相关联对象
 
 #### C# 访问修饰符
-|C# Access Modifier|May Be Applied To|Meaning in Life|
-|-|-|-|
-public|Types or type|Public items have no access restrictions. A public member can be
-accessed from an object, as well as any derived class. A public
+C# 访问修饰符 | 适用于 | Meaning in Life
+-|-|-
+public | 类型或类型成员 | 无访问限制。对象可访问public成员，派生类一样。其他外部程序集也可访问 public 类型。
+private | 类型成员或嵌套类型 | private 项仅能被定义该项的类（或结构）访问。
+protected | 类型成员或嵌套类型 | protected 项仅能被定义它和其所有子类访问使用。因此，protected 项从外部通过C#点操作符访问。
+internal | 类型成员或嵌套类型 | internal 项仅在当前程序集内可访问。因此，如果在.NET类库内定义了一套internal类型，则这些类型无法被其他程序集使用。
+protected internal | 类型成员或嵌套类型 | 当 protected 和 internal 关键字组合修饰某项时，该项可在被定义的程序集和被定义的类内访问使用，也可以被派生类访问。
 
-members type can be accessed from other external assemblies.
-private
-Type
-members
-or nested
-types
-Private items can be accessed only by the class (or structure) that
-defines the item.
-protected Type
-members
-or nested
-types
-Protected items can be used by the class that defines it and any
-child class. However, protected items cannot be accessed from the
-outside world using the C# dot operator.
-internal
-Types or
-type
-members
-Internal items are accessible only within the current assembly.
-Therefore, if you define a set of internal types within a .NET class
-library, other assemblies are not able to use them.
-protected
-internal
-Type
-members
-or nested
-types
-When the protected and internal keywords are combined on
-an item, the item is accessible within the defining assembly, within
-the defining class, and by derived classes.
+##### 默认访问修饰符
+类型成员默认是隐式的 private，而类型是隐式的 internal。因此，下面代码中的类的定义自动设成internal，而类型的默认构造方法自动设成private：
+```C#
+// An internal class with a private default constructor.
+class Radio
+{
+	Radio(){}
+}
+```
+等效于：
+```C#
+// An internal class with a private default constructor.
+internal class Radio
+{
+	private Radio(){}
+}
+```
 
+##### 访问修饰符及嵌套类型
+嵌套类型是一个在类或结构的域内直接声明的类型。举例说明，private 枚举类型 CarColor 嵌套在 public 类 SportsCar内：
+```C#
+public class SportsCar
+{
+	// OK! Nested types can be marked private.
+	private enum CarColor
+	{
+		Red, Green, Blue
+	}
+}
+```
+这里，对嵌套类型上使用private访问修饰符是允许的。但是非嵌套类型（这里是 SportsCar）仅能使用 public或 internal修饰符。因此以下类定义是非法的：
+```C#
+// Error! Nonnested types cannot be marked private!
+private class SportsCar
+{}
+```
+
+---
+
+#### 第一支柱：C#的封装服务
+（P332）
 
 
 ### 2 继承和多态
