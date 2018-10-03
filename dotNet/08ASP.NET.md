@@ -43,10 +43,60 @@ Startup.cs | Startup 类，用于 Open Web Interface for .NET (OWIN)，在 ASP.N
 Web.config | 项目配置文件 | Yes
 
 
+#### Global.asax.cs
+该文件钩在ASP.NET管线的位置。默认项目模板仅使用 Application_Start 事件处理方法，如果愿意也会用到更多的事件。下表为Gblobal.asax.cs文件的常用事件：
+
+Event | Meaning in Life
+-|-
+Application_Start | 应用程序的第一次请求触发
+Application_End | 应用程序结束时触发
+Application_Error | 聘一个未处理错误时触发
+Session_Start | 一个会话的第一次请求触发
+Session_End | 一个会结束（或超时）时触发
+Application_BeginRequest | 在对服务器做请求时触发
+Application_EndRequest | 在ASP.NET响应请求时，在执行HTTP管线链中最后一个事件时触发
+
+#### Models 文件夹
+存放模型类的位置。在大型应用程序中，应该使用一个数据访问工具库保存维护数据访问模型。该文件常用于特定视图的模型。
+
+#### Controllers 文件夹
+控制器文件所在位置。
+
+#### Views 文件夹
+视图存放位置。该文件夹下目录结构存在一个约定：每个控制器在 Views 文件夹下都有自己的文件夹。控制器在该文件夹下可以发现与控制器同名（去除Controller）文件夹。
+在 Views 的根路径下存在 Web.confg 和 _ViewStart.cshtml 文件。前者用于明确该文件夹层级中的视图，并且定义基础页面类型（如 System.Web.Mvc.WebViewPage）, 在基于Razor的项目中，加入所有用于Razor的引用和using语句。后者在任何视图渲染给用户前先执行。该布局视图与Web Form的母版页类似。
 
 
+##### Shared 文件夹
+Views下的一个文件夹。可被所有视图访问。该文件夹包含两个文件：_Layout.cshtml、Error.cshtml。前者是 _ViewStart.cshtml 中的默认布局。后者是该应用的默认错误模板。
 
+> 注：为什么_ViewStart.html(还有_Layout.cshtml)文件有一个前导下划线？Razor视图引擎最初是为 WebMatrix 创建的，它允许任意不用前缀下划线的文件去渲染，因此对于核心文件（象布局和配置）的名子都要以下划线开始。该命名约定也用于 partial views 。不过这并非是MVC在意的约定，因为 MVC没有与 WebMatrix相同的问题，不过下划线的规则却遗留下来。
 
+#### ASP.NET 保留的文件夹
+
+文件夹 | Meaning in Life
+-|-
+App_Code | 容纳动态编译的代码文件
+App_GlobalResources | 存有用于整个应用程序的资源文件，常用于本地化。
+App_LocalResources | 包含针对特定页面的资源。常用于本地化。
+App_Data | 包含有应用程序使用的基于文件的数据
+App_Browsers | 存放浏览器兼容性文件的位置
+App_Themes | 保存该站点的主题
+
+#### App_Start 文件夹
+在Global.asax.cs类文件中，MVC 早期版本包含所有站点配置代码（如路由、安全）。随着配置增多，MVC项目组的开发者明智地把代码拆分成几个类。App_Start文件夹中的所有代码，都会自动编译到站点。
+
+App_Start 文件夹下的文件
+
+文件 | Meaning in Life
+-|-
+BundleConfig.cs | Creates the file bundles for JavaScript and CSS files. Additional bundles can (and should) be created in this class.
+FilterConfig.cs | 注册 action 过滤器 (如认证或授权) 在全局域
+IdentityConfig.cs | 容纳用于 ASP.NET Identity 的支持类.
+RouteConfig.cs | 配置路由表位置的类
+Startup.Auth.cs | ASP.NET Identity 配置的入口
+
+P1708
 
 
 
