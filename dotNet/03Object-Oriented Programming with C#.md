@@ -535,6 +535,91 @@ class SavingsAccount
 - 静态构造方法在任何实例级别的构造方法执行前先执行。
 
 ##### 定义静态类
+一个类被定义成static时，就不可再用 new 来创建对象，它的数据字段和成员都必须用 static 关键字，否则编译会报错。该用法常用于实用工具类(utility class)。
+```C#
+// Static classes can only contain static members!
+static class TimeUtilClass
+{
+	public static void PrintTime() => Console.WriteLine(Now.ToShortTimeString());
+	public static void PrintDate() => Console.WriteLine(Today.ToShortDateString());
+}
+static void Main(string[] args)
+{
+	Console.WriteLine("***** Fun with Static Classes*****\n");
+	// This is just fine.
+	TimeUtilClass.PrintDate();
+	TimeUtilClass.PrintTime();
+
+	// Compiler error! Can't create instance of static classes!
+	TimeUtilClass u = new TimeUtilClass ();
+	Console.ReadLine();
+}
+```
+
+##### 通过 using 关键字导入静态成员
+C#6 支持using关键字导入静态成员。想一下C#所定义的实用工具类：调用Console类的WriteLine()方法，调用DateTime类的Now属性，一定要先用 using 引入 System 命名空间。既然这些类的成员全为静态，那么就可以使用静态的using指令：
+```C#
+// Import the static members of Console and DateTime.
+using static System.Console;
+using static System.DateTime;
+```
+这样，代码就可以直接使用Console和DateTime类的静态成员了，不必再加类名前缀：
+```C#
+static class TimeUtilClass
+{
+	public static void PrintTime() => WriteLine(Now.ToShortTimeString());
+	public static void PrintDate() => WriteLine(Today.ToShortDateString());
+}
+```
+
+注意，过度使用静态导入会存在潜在混淆问题。第一，如果多个类定义了WriteLine()方法怎么办？编译器不明所以，也影响别人阅读。其次，除非开发者熟知.NET代码库，否则不一定知道WriteLine()是Console类的成员。基于这些原因，我会限制本文中静态using的使用。
+
+---
+#### 定义OOP之柱
+面向对象三原则：
+- 封装：隐藏对象的内部实现细节，保护数据完整性
+- 继承：提高代码的重用性
+- 多态：以相同类似方式处理相关联对象
+
+#### C# 访问修饰符
+|C# Access Modifier|May Be Applied To|Meaning in Life|
+|-|-|-|
+public|Types or type|Public items have no access restrictions. A public member can be
+accessed from an object, as well as any derived class. A public
+
+members type can be accessed from other external assemblies.
+private
+Type
+members
+or nested
+types
+Private items can be accessed only by the class (or structure) that
+defines the item.
+protected Type
+members
+or nested
+types
+Protected items can be used by the class that defines it and any
+child class. However, protected items cannot be accessed from the
+outside world using the C# dot operator.
+internal
+Types or
+type
+members
+Internal items are accessible only within the current assembly.
+Therefore, if you define a set of internal types within a .NET class
+library, other assemblies are not able to use them.
+protected
+internal
+Type
+members
+or nested
+types
+When the protected and internal keywords are combined on
+an item, the item is accessible within the defining assembly, within
+the defining class, and by derived classes.
+
+
 
 ### 2 继承和多态
 
