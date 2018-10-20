@@ -388,8 +388,84 @@ section是布局页面的区域，它在运行时内填充。他们可以必选�
 @RenderSection("scripts", required: false)
 ```
 
+如果想创建一个名为`Header`的必填新section，就这样编码：
+```
+@RenderSection("Header",required: true)
+```
 
-P1740
+为了渲染视图中的section，要使用 `@section` 的 Razor语句块。例如，下面的代码行会向渲染页中加入jQuery验证包：
+```
+@section Scripts {
+	@Scripts.Render("~/bundles/jqueryval")
+}
+```
+
+##### 布局页选择
+MVC的视图是基于母版布局（master layout）给整个站点一个统一的界面外观。视图可以显式声明要被渲染的布局视图，或者使用默认的布局视图。
+
+##### 使用指定布局页
+除了使用默认布局页，还可对特定页专门指定视图，可通过在视图文件顶部加入一个`Layout`行。例如：
+```
+@{
+	ViewBag.Title = "Index";
+	Layout = "∼/Views/Shared/_LayoutNew.cshtml";
+}
+```
+
+#### 局部视图(Partial View)
+局部视图与普通视图一样，除了它不用作布局视图，它用于封装UI.局部视图与全视图的区别在于渲染的方式。全视图（由一个控制器的 `View()`方法返回）使用布局页，而局部视图由 `PartialView()`方法（或`Partial() HTML Helper` ）渲染，不用默认布局，而是使用用`Layout`的Razor语句指定的布局。示例：
+```
+public ActionResult Index()
+{
+	return PartialView(_repo.GetAll());
+}
+```
+
+#### 向视图传参
+action方法可以向视图返回数据。通过传递一个对象（或对象列表）给`View()`方法即可完成。传参给`View()`方法的数据也是该视图的模型。
+
+##### 强类型视图和视图模型
+MVC的视图常常使用的是强类型的数据。预期的数据类型在视图中用 `@model` 语句定义，例如：
+```
+@model IEnumerable<AutoLotDAL.Models.Inventory>
+```
+要在视图其他地方访问该数据，要使用`Model`关键词。注意`Model`中的M要大写，而`@model`行中的m要小写。示例：
+```
+@foreach (var item in Model)
+{
+	//Do something interesting here
+}
+```
+
+##### ViewBag, ViewData, TempData
+这三个对象是给视图传递微量数据的机制。示例：
+```
+@{
+	ViewBag.Title = "Index";
+}
+```
+`ViewBat.Title` 属性用于发送视图的title给布局页：
+```
+<title>@ViewBag.Title - My ASP.NET Application</title>
+```
+
+发送数据给视图的方式
+
+数据传输对象 | Meaning in Life
+-|-
+TempData | 仅生存于当前请求和下次请求之间的短生存期的对象
+ViewData | 存储名值对的字典类型数据。示例:`ViewData["Title"] = "Foo"`
+ViewBag | 对`ViewData`字典对象的协态包装。示例：`ViewBag.Title = "Foo"`
+
+现在应该明白数据如何传递到视图的方式了。
+
+---
+
+### Display数据注释
+很多Entity Framework中用到的数据注释也用于MVC的视图引擎中渲染标记和数据校验。有些额外数所注释EF不使用，而MVC会用到，比如 `Display`数据注释。
+
+
+P1744
 
 
 ### ASP.NET Web API
