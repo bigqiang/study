@@ -630,6 +630,102 @@ private class SportsCar
 ---
 
 #### 第一支柱：C#的封装服务
+封装概念的核心就是对象数据不应该直接通过对象实例去访问，而是要定义成 private，如果想改变对象有状态，应间接使用 public 成员访问。
+
+具体体而言，表示一个对象的状态的类成员不应该标记成 public。并且public常量和public的只读字段非常用用。
+
+封装提供了一种方法，能保护对象状态数据的完整性。不要定义成 public字段，要养成定义private数据的习惯。
+ 1. 可以定义一对public访问器(get)和修改器（set）方法
+ 2. 可以定义.NET属性为public。
+ 
+##### 使用经典的访问器及修改器方式的封装
+```C#
+class Employee
+{
+	// Field data.
+	private string empName;
+	private int empID;
+	private float currPay;
+	// Constructors.
+	public Employee() {}
+	public Employee(string name, int id, float pay)
+	{
+		empName = name;
+		empID = id;
+		currPay = pay;
+	}
+	
+	// Accessor (get method).
+	public string GetName()
+	{
+		return empName;
+	}
+	// Mutator (set method).
+	public void SetName(string name)
+	{
+		// Do a check on incoming value
+		// before making assignment.
+		if (name.Length > 15)
+			Console.WriteLine("Error! Name length exceeds 15 characters!");
+		else
+			empName = name;
+	}
+	
+	// Methods.
+	public void GiveBonus(float amount)
+	{
+		currPay += amount;
+	}
+	public void DisplayStats()
+	{
+		Console.WriteLine("Name: {0}", empName);
+		Console.WriteLine("ID: {0}", empID);
+		Console.WriteLine("Pay: {0}", currPay);
+	}
+}
+```
+
+##### 使用.NET属性方式的封装
+虽然可以可以使用经典的 访问器 和 修改器 封装字段数据，但是.NET语言更喜欢使用 `properties` 来增强数据的封装。首先要理解，属性仅仅是对“真正的”访问器和修改器方法的简化。可以在赋值前执行内部必要的逻辑（比如值转成大写字母，对及非法字符进行净化，校验数值范围等）。
+下面是修改过的 `Employee` 类，使用属性语法强化每个字段的封装，而不用经典的 访问器 和 修改器 方法：
+
+```C#
+class Employee
+{
+	// Field data.
+	private string empName;
+	private int empID;
+	private float currPay;
+	// Properties!
+	public string Name
+	{
+		get { return empName; }
+		set
+		{
+			if (value.Length > 15)
+				Console.WriteLine("Error! Name length exceeds 15 characters!");
+			else
+				empName = value;
+		}
+	}
+	// We could add additional business rules to the sets of these properties;
+	// however, there is no need to do so for this example.
+	public int ID
+	{
+		get { return empID; }
+		set { empID = value; }
+	}
+	public float Pay
+	{
+		get { return currPay; }
+		set { currPay = value; }
+	}
+	...
+}
+```
+
+C# 属性是通过定义 `get` 域（访问器）和 `set` 域（修改器）
+
 （P332）
 
 
