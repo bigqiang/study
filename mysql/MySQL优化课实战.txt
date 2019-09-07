@@ -1,0 +1,76 @@
+案例：
+SELECT CASE A.ExpressInTime
+		WHEN '0001-01-01 00:00:00' THEN NULL
+		ELSE ExpressInTime
+	END AS ExpressInTime
+	, CASE A.ExpressOutTime
+		WHEN '0001-01-01 00:00:00' THEN NULL
+		ELSE ExpressOutTime
+	END AS ExpressOutTime, A.TenantId, A.SendOrderId, A.ExpressNumber, A.CreateTime
+	, A.IsArrive, A.IsExpressIn, A.IsExpressOut, A.ExpressInType, A.ExpressOutType
+	, A.ExpressInOperatorId, A.StationId, A.IsLinger, A.ExpressId
+FROM kernel_send_order A
+WHERE A.TenantId = 80000017
+	AND A.StationId IN (88689335)
+	AND A.CreateTime >= '2019-08-01'
+	AND A.CreateTime < '2019/9/1 0:00:00'
+	AND A.StationId = 88689335
+	AND A.ExpressId = 5
+ORDER BY A.CreateTime DESC
+LIMIT 0, 50
+执行时间是：7.413s
+id	select_type	table	type	possible_keys	key	key_len	ref	rows	Extra
+1	SIMPLE	A	range	CreateTime,Express,Station,Tenant,idxStationExpress	CreateTime	7	NULL	2821828	Using where
+
+
+SELECT CASE A.ExpressInTime
+		WHEN '0001-01-01 00:00:00' THEN NULL
+		ELSE ExpressInTime
+	END AS ExpressInTime
+	, CASE A.ExpressOutTime
+		WHEN '0001-01-01 00:00:00' THEN NULL
+		ELSE ExpressOutTime
+	END AS ExpressOutTime, A.TenantId, A.SendOrderId, A.ExpressNumber, A.CreateTime
+	, A.IsArrive, A.IsExpressIn, A.IsExpressOut, A.ExpressInType, A.ExpressOutType
+	, A.ExpressInOperatorId, A.StationId, A.IsLinger, A.ExpressId
+FROM kernel_send_order A
+WHERE A.TenantId = 80000017
+	AND A.StationId IN (88689335)
+	AND A.CreateTime >= '2019-08-01'
+	AND A.CreateTime < '2019/9/1 0:00:00'
+	AND A.StationId = 88689335
+	AND A.ExpressId = 5
+ORDER BY A.SendOrderId DESC
+LIMIT 0, 50
+执行时间是：0.12s
+explain
+id	select_type	table	type	possible_keys	key	key_len	ref	rows	Extra
+1	SIMPLE	A	range	CreateTime,Express,Station,Tenant,idxStationExpress	Station	5	NULL	30837	Using where
+
+kernel_send_order 表索引情况：
+  PRIMARY KEY (`SendOrderId`, `CreateTime`) USING BTREE,
+  INDEX `CreateTime`(`CreateTime`) USING BTREE,
+  INDEX `Express`(`ExpressId`) USING BTREE,
+  INDEX `Station`(`StationId`) USING BTREE,
+  INDEX `Tenant`(`TenantId`, `ShardId`) USING BTREE,
+  INDEX `ExpressNumber`(`ExpressNumber`) USING BTREE,
+  INDEX `Device`(`DeviceSn`) USING BTREE,
+  INDEX `idxUpdateTime`(`UpdateTime`) USING BTREE,
+  INDEX `idxPwd`(`Password`) USING BTREE,
+  INDEX `idxStatus`(`IsExpressIn`, `IsExpressOut`, `IsLinger`) USING BTREE,
+  INDEX `idxOpr`(`ArriveOperatorId`, `ExpressInOperatorId`, `ExpressOutOperatorId`, `LingerOperatorId`) USING BTREE,
+  INDEX `idxOprExpress`(`ExpressInType`, `ExpressInOperatorId`, `IsExpressIn`, `IsExpressOut`, `ExpressOutOperatorId`, `ExpressOutType`) USING BTREE,
+  INDEX `idxLingerSms`(`IsExpressIn`, `ExpressInType`, `IsLinger`, `ExpressInOperatorId`) USING BTREE,
+  INDEX `idxExpressInTime`(`ExpressInTime`) USING BTREE,
+  INDEX `idxLingerTime`(`LingerTime`) USING BTREE,
+  INDEX `idexExpressOutTime`(`ExpressOutTime`) USING BTREE,
+  INDEX `idxInOpr`(`ExpressInOperatorId`) USING BTREE,
+  INDEX `idxOutOpr`(`ExpressOutOperatorId`) USING BTREE,
+  INDEX `idxArriveOpr`(`ArriveOperatorId`) USING BTREE,
+  INDEX `idxStationExpress`(`StationId`, `IsExpressIn`, `IsExpressOut`, `ExpressOutType`, `ExpressInType`) USING BTREE,
+  INDEX `idxSendOrderId`(`SendOrderId`) USING BTREE
+
+Explain 的用法详解：https://www.cnblogs.com/xuanzhi201111/p/4175635.html  
+
+以下语句 f1 字段是否会用到了索引？
+select * from T group by f1
