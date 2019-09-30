@@ -31,6 +31,18 @@ select * from T order by f1 DESC;
 
 思路：先讲起作用的索引，再讲不起作用的索引
 
+=======
+ B-tree索引能加快数据的查询速度
+ B-tree索引更适合进行范围查找
+ 
+ 什么情况下可以用到B树索引?
+     全值匹配的查询 order_sn = "987654321"
+     匹配最左前缀的查询
+     匹配列前缀的查询: order_sn like "9876%"
+     匹配范围值的查询:order_sn > '987654321000'  and order_sn > '987654321000'
+     精确匹配左前列并范围匹配另外一列
+     只访问索引的查询
+=======
 
 ----------
 ## 索引类型
@@ -104,11 +116,59 @@ SELECT ... WHERE TO_DAYS(CURRENT_DATE) - TO_DAYS(date_col) <= 10;
 前缀索引缺点：无法用于 ORDER BY 和 GROUP BY，也无法使用前缀索引做覆盖扫描。
 
 
+### 多列索引
+一个常见错误：为每个列创建独立的索引，或者按照错误的顺序创建多列索引。
 
+先看第一个问题，为每个列创建独立索引，SHOW CREATE TABLE 查看一个示例表t:
+```SQL
+CREATE TABLE t (
+	c1 INT,
+	c2 INT,
+	c3 INT,
+	KEY(c1),
+	KEY(c2),
+	KEY(c3)
+);
+```
+该索引策略是由一些专家的模糊建议“把WHERE条件里面的列都建上索引”导致。该建议非常错误。这样最好的情况只能是“一星”索引，与真正最优索引差几个数量级。有时如果无法设计一个“三星”索引，那么不如忽略WHERE子句，集中精力优化索引列顺序，或创建一个全覆盖索引。
 
+在多列上建立独立单列索引多数情况下并不提高MySQL查询性能。MySQL5.0及以上版本引入了“索引合并”(index merge)的策略，一定程序上可以使用表上的多个单列索引来定位指定的行。而早先的版本只能使用其中某一个单列索引，此时没有一个独立的单列索引是非常有效的。如：表 film_actor 在字段 film_id 和 actor_id 上各有一个单列索引。但对于查询 WHERE 条件，这两个单列索引都不是好的选择：
+```
+mysql> SELECT film_id, actor_id FROM sakila.film_actor WHERE actor_id=1 OR film_id=1;
+```
+在MySQL老版本中，MySQL对这个查询会使用全表扫描。要改成如下方式：
+```
+mysql> SELECT film_id, actor_id FROM sakila.film_actor WHERE actor_id=1
+   -> UNION ALL
+   -> SELECT film_id, actor_id FROM sakila.film_actor WHERE film_id=1
+   ->     AND actor_id <> 1;
+```
 
+在 MySQL 5.0 和更新的版本中，查询能同时使用这两个单列索引进行扫描，并将结果合并。这种算法有三个变种：OR 条件的联合（union）,AND 条件的相交（intersection），组合这两种情况的联合及相交。下面的查询就是使用了两个索引扫描的联合通过 EXPLAIN 中的Extra列可以看到这点：
+```
+mysql> EXPLAIN SELECT film_id, actor_id FROM sakila.film_actor
+  -> WHERE actor_id = 1 OR film_id = 1\G
+*************************1.row*****************************
+            id: 1
+   select type: SIMPLE
+         table: film_actor
+          type: index_merge
+ possible keys: PRIMARY, idx_fk_film_id
+           key: PRIMARY, idx_fk_film
+           ref: NULL
+          rows: 29
+         Extra: Using union(PRIMARY, idx_fk_film_id); Using where
+```
+MySQL会使用这类技术优化复杂查询，所以在某些语句的 Extra列中还可以看到嵌套操作。
 
+索引合并策略有时候是一种优化的结果，但实际上更多时候说明了表上的索引建得很差：
+- 当出现服务器对多个索引做相交操作时（通常有多个 AND 条件），通常意味着需要一个包含所有相关列的多列索引，而不是多个独立的单列索引。
+- 当服务器需要对多个索引做联合操作时(通常有多个0R条件),通常需要耗费大量CPU和内存资源在算法的缓存、排序和合并操作上。特别是当其中有些索引的选择性不高，需要合并扫描返回的大量数据的时候
+- 更重要的是，优化器不会把这些计算到“查询成本”(cost)中，优化器只关心随机页面读取。这会使得查询的成本被“低估”，导致该执行计划还不如直接走全表扫描。这样做不但会消耗更多的CPU和内存资源,还可能会影响查询的并发性,但如果是单独运行这样的查询则往往会忽略对并发性的影响。通常来说,还不如像在 MySQL 4.1 或者更早的时代一样,将查询改写成 UNION的方式往往更好。
 
+如果在 EXPLAIN 中看到有索引合并，应检查一下查询和表结构，看是否最优。也可以通过参数 optimizer_switch 来关闭索引合并功能。也可以使用 IGNORE INDEX 提示让优化器忽略掉某些索引。
+
+### 选择合适的索引列顺序
 
 
 
