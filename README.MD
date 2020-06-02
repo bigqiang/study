@@ -9,6 +9,8 @@
 
 # [dotNET 学习](https://github.com/bigqiang/study/tree/master/dotNet)
 
+# [《深度学习》学习笔记](https://github.com/bigqiang/study/tree/master/deeplearning)
+
 ## 1. PHP 5.6.13 安装
 
 在 http://windows.php.net/download 下找到相应的 VC11 x86 Non Thread Safe 版本下载。注因为除php7版本外的其他php的x64版本都属于试验性质，暂不使用。
